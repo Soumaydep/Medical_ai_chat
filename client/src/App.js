@@ -10,6 +10,7 @@ import LanguageDemo from './components/LanguageDemo';
 import MedicalDictionary from './components/MedicalDictionary';
 import HealthInsights from './components/HealthInsights';
 import VoiceAssistant from './components/VoiceAssistant';
+import GastricDietGuide from './components/GastricDietGuide';
 import config from './config';
 
 function App() {
@@ -95,6 +96,7 @@ function App() {
             { id: 'main', label: '🏠 Medical Analysis', icon: 'main' },
             { id: 'insights', label: '🧠 Health Insights', icon: 'insights' },
             { id: 'dictionary', label: '📚 Medical Dictionary', icon: 'dictionary' },
+            { id: 'gastric', label: '🍽️ Gastric Diet Guide', icon: 'gastric' },
             { id: 'voice', label: '🎙️ Voice Assistant', icon: 'voice' }
           ].map((tab) => (
             <button
@@ -194,6 +196,11 @@ function App() {
         {/* Medical Dictionary Tab */}
         {activeTab === 'dictionary' && (
           <MedicalDictionary />
+        )}
+
+        {/* Gastric Diet Guide Tab */}
+        {activeTab === 'gastric' && (
+          <GastricDietGuide />
         )}
 
         {/* Voice Assistant Tab */}

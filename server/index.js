@@ -599,6 +599,141 @@ app.post('/api/recommendations', async (req, res) => {
   }
 });
 
+// Gastric diet recommendations endpoint
+app.post('/api/gastric-recommendations', async (req, res) => {
+  try {
+    const { symptoms, severity, age, lifestyle } = req.body;
+    
+    if (!symptoms || symptoms.length === 0) {
+      return res.status(400).json({ error: 'Symptoms are required' });
+    }
+
+    // Advanced gastric recommendations based on symptoms
+    const gastricAdvice = {
+      immediate: [],
+      dietary: [],
+      lifestyle: [],
+      supplements: [],
+      monitoring: []
+    };
+
+    // Severity-based recommendations
+    const severityLevel = severity || 'mild';
+    
+    // Symptom-specific advice
+    if (symptoms.includes('acidity')) {
+      gastricAdvice.immediate.push({
+        action: 'Alkaline Water',
+        description: 'Drink lukewarm water with a pinch of baking soda',
+        timing: 'When experiencing heartburn'
+      });
+      gastricAdvice.dietary.push({
+        change: 'Reduce Acidic Foods',
+        foods: ['Limit tomatoes, citrus, coffee, chocolate'],
+        benefit: 'Reduces acid production'
+      });
+    }
+
+    if (symptoms.includes('bloating')) {
+      gastricAdvice.immediate.push({
+        action: 'Digestive Tea',
+        description: 'Fennel or ginger tea after meals',
+        timing: 'Post-meal digestive aid'
+      });
+      gastricAdvice.lifestyle.push({
+        change: 'Eating Habits',
+        practice: 'Eat slowly, chew thoroughly, avoid gas-producing foods',
+        benefit: 'Reduces gas formation'
+      });
+    }
+
+    if (symptoms.includes('stomachPain')) {
+      gastricAdvice.immediate.push({
+        action: 'Warm Compress',
+        description: 'Apply warm heating pad to abdomen',
+        timing: 'During pain episodes'
+      });
+      gastricAdvice.dietary.push({
+        change: 'Bland Diet',
+        foods: ['Rice, bananas, toast, applesauce'],
+        benefit: 'Gentle on inflamed stomach'
+      });
+    }
+
+    if (symptoms.includes('gerd')) {
+      gastricAdvice.lifestyle.push({
+        change: 'Sleep Position',
+        practice: 'Elevate head of bed 6-8 inches',
+        benefit: 'Prevents acid reflux at night'
+      });
+      gastricAdvice.dietary.push({
+        change: 'Meal Timing',
+        foods: ['Stop eating 3 hours before bed'],
+        benefit: 'Allows digestion before lying down'
+      });
+    }
+
+    // Age-specific recommendations
+    if (age && age > 50) {
+      gastricAdvice.supplements.push({
+        supplement: 'Digestive Enzymes',
+        description: 'May help with protein digestion',
+        consultation: 'Consult doctor before starting'
+      });
+    }
+
+    // Lifestyle-based additions
+    if (lifestyle === 'sedentary') {
+      gastricAdvice.lifestyle.push({
+        change: 'Physical Activity',
+        practice: '20-minute walk after meals',
+        benefit: 'Improves digestion and reduces bloating'
+      });
+    }
+
+    // General monitoring advice
+    gastricAdvice.monitoring = [
+      {
+        track: 'Symptom Diary',
+        description: 'Record foods and symptoms for 2 weeks',
+        purpose: 'Identify personal trigger foods'
+      },
+      {
+        track: 'Meal Timing',
+        description: 'Note when symptoms occur relative to meals',
+        purpose: 'Optimize eating schedule'
+      }
+    ];
+
+    // Red flag symptoms requiring medical attention
+    const redFlags = [];
+    if (symptoms.includes('severeAbdominalPain')) {
+      redFlags.push('Severe abdominal pain requires immediate medical attention');
+    }
+    if (symptoms.includes('bloodInStool')) {
+      redFlags.push('Blood in stool requires urgent medical evaluation');
+    }
+
+    res.json({
+      success: true,
+      recommendations: gastricAdvice,
+      redFlags: redFlags,
+      followUp: {
+        timeframe: severityLevel === 'severe' ? '1-2 weeks' : '4-6 weeks',
+        specialist: severityLevel === 'severe' ? 'Gastroenterologist' : 'Primary Care',
+        reason: 'Monitor symptom improvement with dietary changes'
+      },
+      generatedAt: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error generating gastric recommendations:', error);
+    res.status(500).json({
+      error: 'Failed to generate gastric recommendations',
+      message: error.message
+    });
+  }
+});
+
 // Error handling middleware
 app.use((error, req, res, next) => {
   console.error('Unhandled error:', error);
