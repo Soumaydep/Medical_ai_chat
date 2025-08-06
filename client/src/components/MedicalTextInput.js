@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useTheme } from '../contexts/ThemeContext';
 
 const MedicalTextInput = ({ onSimplify, isLoading, initialText, onTextChange }) => {
   const [medicalText, setMedicalText] = useState(initialText || '');
+  const { colors } = useTheme();
 
   useEffect(() => {
     setMedicalText(initialText || '');
@@ -36,17 +38,17 @@ const MedicalTextInput = ({ onSimplify, isLoading, initialText, onTextChange }) 
   ];
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className={`${colors.card} rounded-lg shadow-sm ${colors.border} border p-6 transition-all duration-300`}>
       <div className="flex items-center space-x-2 mb-4">
-        <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className={`w-5 h-5 ${colors.textTertiary}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
-        <h3 className="text-lg font-medium text-gray-900">Medical Text to Simplify</h3>
+        <h3 className={`text-lg font-medium ${colors.textPrimary}`}>Medical Text to Simplify</h3>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="medical-text" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="medical-text" className={`block text-sm font-medium ${colors.textSecondary} mb-2`}>
             Paste your medical report or text here:
           </label>
           <textarea
@@ -55,7 +57,7 @@ const MedicalTextInput = ({ onSimplify, isLoading, initialText, onTextChange }) 
             onChange={handleTextChange}
             placeholder="Enter medical text, lab results, doctor's notes, or any medical documentation you'd like to understand better..."
             rows={8}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 resize-vertical"
+            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 resize-vertical transition-all duration-300 ${colors.input} ${colors.inputFocus}`}
             disabled={isLoading}
           />
           <div className="mt-1 text-xs text-gray-500">
@@ -67,10 +69,10 @@ const MedicalTextInput = ({ onSimplify, isLoading, initialText, onTextChange }) 
           <button
             type="submit"
             disabled={!medicalText.trim() || isLoading}
-            className={`inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white transition-colors ${
+            className={`inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white transition-all duration-300 ${
               !medicalText.trim() || isLoading
-                ? 'bg-gray-400 cursor-not-allowed'
-                : 'bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500'
+                ? 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed'
+                : colors.buttonPrimary + ' focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500'
             }`}
           >
             {isLoading ? (
@@ -98,7 +100,7 @@ const MedicalTextInput = ({ onSimplify, isLoading, initialText, onTextChange }) 
               onTextChange('');
             }}
             disabled={isLoading}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className={`inline-flex items-center px-4 py-2 border shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 ${colors.buttonSecondary} ${colors.border}`}
           >
             Clear
           </button>

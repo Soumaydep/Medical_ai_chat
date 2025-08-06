@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useTheme } from '../contexts/ThemeContext';
 import config from '../config';
 
 const HealthInsights = ({ medicalData, userProfile }) => {
   const [insights, setInsights] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [isLoading, setIsLoading] = useState(false);
+  const { colors } = useTheme();
 
   // Demo health insights data
   const demoInsights = {
@@ -176,21 +178,21 @@ const HealthInsights = ({ medicalData, userProfile }) => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div className={`${colors.card} rounded-lg shadow-md p-6 transition-all duration-300`}>
       <div className="flex items-center space-x-3 mb-6">
-        <div className="bg-purple-100 p-3 rounded-lg">
-          <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="bg-purple-100 dark:bg-purple-800 p-3 rounded-lg transition-all duration-300">
+          <svg className="w-6 h-6 text-purple-600 dark:text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
           </svg>
         </div>
         <div>
-          <h3 className="text-xl font-semibold text-gray-800">🧠 AI Health Insights</h3>
-          <p className="text-sm text-gray-600">Personalized health analytics and predictions</p>
+          <h3 className={`text-xl font-semibold ${colors.textPrimary}`}>🧠 AI Health Insights</h3>
+          <p className={`text-sm ${colors.textSecondary}`}>Personalized health analytics and predictions</p>
         </div>
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg mb-6">
+      <div className={`flex space-x-1 ${colors.tabBackground} p-1 rounded-lg mb-6 transition-all duration-300`}>
         {[
           { id: 'overview', label: '📊 Overview', icon: 'overview' },
           { id: 'risks', label: '⚠️ Risk Factors', icon: 'risks' },
@@ -200,10 +202,10 @@ const HealthInsights = ({ medicalData, userProfile }) => {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors ${
+            className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-all duration-300 ${
               activeTab === tab.id
-                ? 'bg-white text-purple-600 shadow-sm'
-                : 'text-gray-600 hover:text-gray-800'
+                ? colors.tabActive
+                : colors.tabInactive
             }`}
           >
             {tab.label}
@@ -215,9 +217,9 @@ const HealthInsights = ({ medicalData, userProfile }) => {
       {activeTab === 'overview' && (
         <div className="space-y-6">
           {/* Health Score */}
-          <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="text-lg font-semibold text-gray-800">Overall Health Score</h4>
+          <div className={`bg-gradient-to-r ${colors.gradients.accent} rounded-lg p-6 transition-all duration-300`}>
+                          <div className="flex items-center justify-between mb-4">
+                <h4 className={`text-lg font-semibold ${colors.textPrimary}`}>Overall Health Score</h4>
               <span className={`px-3 py-1 text-sm font-medium rounded-full ${getRiskColor(insights.overview.riskLevel)}`}>
                 {insights.overview.riskLevel.toUpperCase()}
               </span>

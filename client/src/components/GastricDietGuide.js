@@ -298,14 +298,14 @@ const GastricDietGuide = () => {
                 <div key={key} className="relative">
                   <button
                     onClick={() => toggleSymptom(key)}
-                    className={`w-full p-4 text-left border-2 rounded-lg transition-all ${
+                    className={`w-full p-4 text-left border-2 rounded-lg transition-all duration-300 ${
                       selectedSymptoms.includes(key)
-                        ? 'border-green-500 bg-green-50'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-green-500 bg-green-50 dark:bg-green-900 dark:border-green-400'
+                        : `${colors.border} ${colors.cardHover} border`
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-medium">{symptom.label}</span>
+                      <span className={`font-medium ${colors.textPrimary}`}>{symptom.label}</span>
                       <div className="flex items-center space-x-2">
                         <span className={`px-2 py-1 text-xs rounded-full border ${getSeverityColor(symptom.severity)}`}>
                           {symptom.severity}

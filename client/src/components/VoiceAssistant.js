@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTheme } from '../contexts/ThemeContext';
 
 const VoiceAssistant = ({ onTextInput, onVoiceCommand, currentText }) => {
   const [isListening, setIsListening] = useState(false);
@@ -12,6 +13,7 @@ const VoiceAssistant = ({ onTextInput, onVoiceCommand, currentText }) => {
     voice: null
   });
   const [availableVoices, setAvailableVoices] = useState([]);
+  const { colors } = useTheme();
 
   const recognitionRef = useRef(null);
   const synthRef = useRef(null);
@@ -204,16 +206,16 @@ const VoiceAssistant = ({ onTextInput, onVoiceCommand, currentText }) => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div className={`${colors.card} rounded-lg shadow-md p-6 transition-all duration-300`}>
       <div className="flex items-center space-x-3 mb-6">
-        <div className="bg-green-100 p-3 rounded-lg">
-          <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="bg-green-100 dark:bg-green-800 p-3 rounded-lg transition-all duration-300">
+          <svg className="w-6 h-6 text-green-600 dark:text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
           </svg>
         </div>
         <div>
-          <h3 className="text-xl font-semibold text-gray-800">🎙️ Voice Assistant</h3>
-          <p className="text-sm text-gray-600">Hands-free interaction with speech and audio</p>
+          <h3 className={`text-xl font-semibold ${colors.textPrimary}`}>🎙️ Voice Assistant</h3>
+          <p className={`text-sm ${colors.textSecondary}`}>Hands-free interaction with speech and audio</p>
         </div>
       </div>
 

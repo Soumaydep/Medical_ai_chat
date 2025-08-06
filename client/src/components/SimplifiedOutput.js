@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useTheme } from '../contexts/ThemeContext';
 
 const SimplifiedOutput = ({ originalText, simplifiedText, language }) => {
   const [showOriginal, setShowOriginal] = useState(false);
+  const { colors } = useTheme();
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text).then(() => {
@@ -10,13 +12,13 @@ const SimplifiedOutput = ({ originalText, simplifiedText, language }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className={`${colors.card} rounded-lg shadow-sm ${colors.border} border p-6 transition-all duration-300`}>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-2">
-          <svg className="w-5 h-5 text-medical-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 text-green-500 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <h3 className="text-lg font-medium text-gray-900">Simplified Explanation</h3>
+          <h3 className={`text-lg font-medium ${colors.textPrimary}`}>Simplified Explanation</h3>
           {language !== 'English' && (
             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
               {language}

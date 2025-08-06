@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTheme } from '../contexts/ThemeContext';
 import config from '../config';
 
 const MedicalDictionary = () => {
@@ -7,6 +8,7 @@ const MedicalDictionary = () => {
   const [selectedTerm, setSelectedTerm] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [recentSearches, setRecentSearches] = useState([]);
+  const { colors } = useTheme();
 
   // Built-in dictionary for demo purposes
   const builtInTerms = {
@@ -154,16 +156,16 @@ const MedicalDictionary = () => {
   const popularTerms = ['hemoglobin', 'creatinine', 'cholesterol', 'glucose', 'platelets'];
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div className={`${colors.card} rounded-lg shadow-md p-6 transition-all duration-300`}>
       <div className="flex items-center space-x-3 mb-6">
-        <div className="bg-indigo-100 p-3 rounded-lg">
-          <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="bg-indigo-100 dark:bg-indigo-800 p-3 rounded-lg transition-all duration-300">
+          <svg className="w-6 h-6 text-indigo-600 dark:text-indigo-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
           </svg>
         </div>
         <div>
-          <h3 className="text-xl font-semibold text-gray-800">📚 Medical Dictionary</h3>
-          <p className="text-sm text-gray-600">Search medical terms with pronunciations and explanations</p>
+          <h3 className={`text-xl font-semibold ${colors.textPrimary}`}>📚 Medical Dictionary</h3>
+          <p className={`text-sm ${colors.textSecondary}`}>Search medical terms with pronunciations and explanations</p>
         </div>
       </div>
 
@@ -175,7 +177,7 @@ const MedicalDictionary = () => {
             value={searchTerm}
             onChange={(e) => handleSearch(e.target.value)}
             placeholder="Search medical terms (e.g., hemoglobin, creatinine, glucose...)"
-            className="w-full px-4 py-3 pl-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            className={`w-full px-4 py-3 pl-12 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-300 ${colors.input} ${colors.inputFocus}`}
           />
           <svg className="absolute left-4 top-3.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
