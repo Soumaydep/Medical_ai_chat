@@ -1,0 +1,96 @@
+{
+  "name": "MediClarify AI",
+  "short_name": "MediClarify",
+  "description": "AI-powered medical report simplification with voice accessibility and offline capabilities",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "categories": ["health", "medical", "accessibility", "productivity"],
+  "lang": "en-US",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png", 
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "MediClarify AI Dashboard"
+    },
+    {
+      "src": "/screenshot-narrow.png",
+      "sizes": "360x640", 
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "MediClarify AI Mobile View"
+    }
+  ],
+  "features": [
+    "Cross Platform",
+    "Fast",
+    "Offline Support",
+    "Voice Interaction",
+    "Accessibility Optimized"
+  ],
+  "shortcuts": [
+    {
+      "name": "Medical Text Input",
+      "short_name": "Input",
+      "description": "Quickly input medical text for analysis",
+      "url": "/?tab=main",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Voice Assistant",
+      "short_name": "Voice",
+      "description": "Access voice-powered medical assistance",
+      "url": "/?tab=voice",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Health Insights",
+      "short_name": "Insights", 
+      "description": "View AI-powered health analytics",
+      "url": "/?tab=insights",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "handle_links": "preferred",
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  }
+} 

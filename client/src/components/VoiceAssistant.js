@@ -1,41 +1,81 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 
-const VoiceAssistant = ({ onTextInput, onVoiceCommand, currentText }) => {
+const VoiceAssistant = ({ onVoiceInput, onVoiceCommand }) => {
+  const { colors } = useTheme();
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [transcript, setTranscript] = useState('');
-  const [isSupported, setIsSupported] = useState(false);
   const [voiceSettings, setVoiceSettings] = useState({
-    rate: 0.8,
+    rate: 1,
     pitch: 1,
-    volume: 0.8,
+    volume: 1,
     voice: null
   });
-  const [availableVoices, setAvailableVoices] = useState([]);
-  const { colors } = useTheme();
-
+  const [isRecognitionSupported, setIsRecognitionSupported] = useState(false);
+  const [isSpeechSupported, setIsSpeechSupported] = useState(false);
+  const [keyboardMode, setKeyboardMode] = useState(false);
+  const [audioBookmarks, setAudioBookmarks] = useState([]);
+  const [emergencyAlerts, setEmergencyAlerts] = useState([]);
+  
   const recognitionRef = useRef(null);
   const synthRef = useRef(null);
+  const currentUtteranceRef = useRef(null);
+  const keyboardShortcutsRef = useRef(null);
+
+  // Medical pronunciation dictionary
+  const medicalPronunciations = {
+    'cholesterol': 'kuh-LES-tuh-rawl',
+    'hemoglobin': 'HEE-muh-gloh-bin',
+    'creatinine': 'kree-AT-uh-neen',
+    'glucose': 'GLOO-kohs',
+    'triglycerides': 'try-GLIS-uh-rydz',
+    'pneumonia': 'noo-MOH-nyuh',
+    'myocardial': 'my-uh-KAHR-dee-uhl',
+    'hypertension': 'hy-per-TEN-shuhn',
+    'diabetes': 'dy-uh-BEE-teez',
+    'gastroenteritis': 'gas-troh-en-tuh-RY-tis'
+  };
+
+  // Keyboard shortcuts for accessibility
+  const keyboardShortcuts = {
+    'Alt+V': () => toggleListening(),
+    'Alt+S': () => stopSpeaking(),
+    'Alt+R': () => readCurrentContent(),
+    'Alt+P': () => toggleKeyboardMode(),
+    'Alt+H': () => speakHelp(),
+    'Alt+1': () => navigateToSection('medical-input'),
+    'Alt+2': () => navigateToSection('simplified-output'),
+    'Alt+3': () => navigateToSection('chatbot'),
+    'Alt+4': () => navigateToSection('voice-assistant')
+  };
 
   useEffect(() => {
-    // Check for browser support
-    const speechRecognitionSupported = 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window;
-    const speechSynthesisSupported = 'speechSynthesis' in window;
+    initializeVoiceFeatures();
+    initializeKeyboardShortcuts();
+    announcePageLoad();
     
-    setIsSupported(speechRecognitionSupported && speechSynthesisSupported);
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+      if (currentUtteranceRef.current) {
+        speechSynthesis.cancel();
+      }
+      removeKeyboardShortcuts();
+    };
+  }, []);
 
-    if (speechRecognitionSupported) {
+  const initializeVoiceFeatures = () => {
+    // Check for Speech Recognition support
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      setIsRecognitionSupported(true);
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       recognitionRef.current = new SpeechRecognition();
       
       recognitionRef.current.continuous = true;
       recognitionRef.current.interimResults = true;
       recognitionRef.current.lang = 'en-US';
-
-      recognitionRef.current.onstart = () => {
-        setIsListening(true);
-      };
 
       recognitionRef.current.onresult = (event) => {
         let finalTranscript = '';
@@ -50,8 +90,8 @@ const VoiceAssistant = ({ onTextInput, onVoiceCommand, currentText }) => {
           }
         }
 
-        setTranscript(finalTranscript + interimTranscript);
-
+        setTranscript(finalTranscript || interimTranscript);
+        
         if (finalTranscript) {
           handleVoiceCommand(finalTranscript);
         }
@@ -60,6 +100,7 @@ const VoiceAssistant = ({ onTextInput, onVoiceCommand, currentText }) => {
       recognitionRef.current.onerror = (event) => {
         console.error('Speech recognition error:', event.error);
         setIsListening(false);
+        speak('Sorry, I had trouble understanding. Please try again.');
       };
 
       recognitionRef.current.onend = () => {
@@ -67,346 +108,466 @@ const VoiceAssistant = ({ onTextInput, onVoiceCommand, currentText }) => {
       };
     }
 
-    if (speechSynthesisSupported) {
+    // Check for Speech Synthesis support
+    if ('speechSynthesis' in window) {
+      setIsSpeechSupported(true);
       synthRef.current = window.speechSynthesis;
       
       // Load available voices
       const loadVoices = () => {
         const voices = synthRef.current.getVoices();
-        setAvailableVoices(voices);
-        
-        // Set default voice to a female English voice if available
-        const defaultVoice = voices.find(voice => 
-          voice.lang.startsWith('en') && voice.name.toLowerCase().includes('female')
+        const preferredVoice = voices.find(voice => 
+          voice.lang.startsWith('en') && voice.name.includes('Natural')
         ) || voices.find(voice => voice.lang.startsWith('en')) || voices[0];
         
-        setVoiceSettings(prev => ({ ...prev, voice: defaultVoice }));
+        setVoiceSettings(prev => ({ ...prev, voice: preferredVoice }));
       };
 
-      loadVoices();
       synthRef.current.onvoiceschanged = loadVoices;
+      loadVoices();
     }
+  };
 
-    return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
+  const initializeKeyboardShortcuts = () => {
+    const handleKeyDown = (event) => {
+      const shortcut = `${event.altKey ? 'Alt+' : ''}${event.ctrlKey ? 'Ctrl+' : ''}${event.key}`;
+      
+      if (keyboardShortcuts[shortcut]) {
+        event.preventDefault();
+        keyboardShortcuts[shortcut]();
       }
-      if (synthRef.current) {
-        synthRef.current.cancel();
+
+      // Tab navigation enhancement
+      if (event.key === 'Tab') {
+        announceCurrentElement(event.target);
       }
     };
-  }, []);
 
-  const handleVoiceCommand = (command) => {
-    const lowerCommand = command.toLowerCase().trim();
-    
-    // Voice commands for medical app
-    if (lowerCommand.includes('read') || lowerCommand.includes('speak')) {
-      if (currentText) {
-        speakText(currentText);
-      } else {
-        speakText("No text available to read. Please enter or upload medical text first.");
-      }
-    } else if (lowerCommand.includes('stop speaking') || lowerCommand.includes('stop reading')) {
-      stopSpeaking();
-    } else if (lowerCommand.includes('simplify') || lowerCommand.includes('explain')) {
-      if (onVoiceCommand) {
-        onVoiceCommand('simplify');
-      }
-      speakText("Processing your medical text for simplification. Please wait a moment.");
-    } else if (lowerCommand.includes('translate') || lowerCommand.includes('change language')) {
-      if (onVoiceCommand) {
-        onVoiceCommand('translate');
-      }
-      speakText("Language options are available in the language selector.");
-    } else if (lowerCommand.includes('help') || lowerCommand.includes('commands')) {
-      speakVoiceCommands();
-    } else {
-      // Treat as medical text input
-      if (onTextInput) {
-        onTextInput(command);
-      }
-      speakText("Medical text received. You can now ask me to simplify it or ask questions about it.");
+    document.addEventListener('keydown', handleKeyDown);
+    keyboardShortcutsRef.current = handleKeyDown;
+  };
+
+  const removeKeyboardShortcuts = () => {
+    if (keyboardShortcutsRef.current) {
+      document.removeEventListener('keydown', keyboardShortcutsRef.current);
     }
   };
 
-  const startListening = () => {
-    if (recognitionRef.current && !isListening) {
+  const announcePageLoad = () => {
+    setTimeout(() => {
+      speak('MediClarify AI loaded. Press Alt+H for help with voice commands and keyboard shortcuts.');
+    }, 1000);
+  };
+
+  const announceCurrentElement = (element) => {
+    if (!element) return;
+    
+    const label = element.getAttribute('aria-label') || 
+                  element.getAttribute('title') || 
+                  element.textContent?.trim() || 
+                  element.placeholder;
+    
+    if (label && keyboardMode) {
+      speak(label, { interrupt: false, priority: 'low' });
+    }
+  };
+
+  const navigateToSection = (sectionId) => {
+    const element = document.getElementById(sectionId) || document.querySelector(`[data-section="${sectionId}"]`);
+    if (element) {
+      element.focus();
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      speak(`Navigated to ${sectionId.replace('-', ' ')} section`);
+    }
+  };
+
+  const toggleListening = () => {
+    if (!isRecognitionSupported) {
+      speak('Speech recognition is not supported in this browser. Please use a modern browser like Chrome or Edge.');
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+      speak('Voice input stopped');
+    } else {
       setTranscript('');
       recognitionRef.current.start();
+      setIsListening(true);
+      speak('Voice input started. Speak your medical text or ask a question.');
     }
   };
 
-  const stopListening = () => {
-    if (recognitionRef.current && isListening) {
-      recognitionRef.current.stop();
-    }
-  };
+  const speak = (text, options = {}) => {
+    if (!isSpeechSupported || !text) return;
 
-  const speakText = (text) => {
-    if (synthRef.current && text) {
-      // Cancel any ongoing speech
+    const { interrupt = true, priority = 'normal' } = options;
+
+    if (interrupt && currentUtteranceRef.current) {
       synthRef.current.cancel();
-      
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = voiceSettings.rate;
-      utterance.pitch = voiceSettings.pitch;
-      utterance.volume = voiceSettings.volume;
-      
-      if (voiceSettings.voice) {
-        utterance.voice = voiceSettings.voice;
-      }
-
-      utterance.onstart = () => setIsSpeaking(true);
-      utterance.onend = () => setIsSpeaking(false);
-      utterance.onerror = () => setIsSpeaking(false);
-
-      synthRef.current.speak(utterance);
     }
+
+    // Check for emergency keywords
+    const emergencyKeywords = ['urgent', 'emergency', 'critical', 'severe', 'immediate'];
+    const isEmergency = emergencyKeywords.some(keyword => 
+      text.toLowerCase().includes(keyword)
+    );
+
+    if (isEmergency) {
+      setEmergencyAlerts(prev => [...prev, { text, timestamp: new Date() }]);
+    }
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = voiceSettings.rate;
+    utterance.pitch = isEmergency ? 1.2 : voiceSettings.pitch;
+    utterance.volume = isEmergency ? 1 : voiceSettings.volume;
+    utterance.voice = voiceSettings.voice;
+
+    // Add pronunciation guide for medical terms
+    let spokenText = text;
+    Object.entries(medicalPronunciations).forEach(([term, pronunciation]) => {
+      const regex = new RegExp(`\\b${term}\\b`, 'gi');
+      spokenText = spokenText.replace(regex, `${term}, pronounced ${pronunciation},`);
+    });
+    utterance.text = spokenText;
+
+    utterance.onstart = () => {
+      setIsSpeaking(true);
+      currentUtteranceRef.current = utterance;
+    };
+
+    utterance.onend = () => {
+      setIsSpeaking(false);
+      currentUtteranceRef.current = null;
+    };
+
+    utterance.onerror = (event) => {
+      console.error('Speech synthesis error:', event.error);
+      setIsSpeaking(false);
+      currentUtteranceRef.current = null;
+    };
+
+    synthRef.current.speak(utterance);
   };
 
   const stopSpeaking = () => {
     if (synthRef.current) {
       synthRef.current.cancel();
       setIsSpeaking(false);
+      currentUtteranceRef.current = null;
     }
   };
 
-  const speakVoiceCommands = () => {
-    const commands = `
-      Here are the available voice commands:
-      Say "read" or "speak" to have text read aloud.
-      Say "simplify" or "explain" to process medical text.
-      Say "stop speaking" to stop audio.
-      Say "help" or "commands" to hear this list again.
-      You can also speak medical text directly and I'll process it.
-    `;
-    speakText(commands);
+  const handleVoiceCommand = (command) => {
+    const lowerCommand = command.toLowerCase().trim();
+    
+    // Voice navigation commands
+    if (lowerCommand.includes('go to') || lowerCommand.includes('navigate to')) {
+      if (lowerCommand.includes('input') || lowerCommand.includes('text')) {
+        navigateToSection('medical-input');
+      } else if (lowerCommand.includes('output') || lowerCommand.includes('result')) {
+        navigateToSection('simplified-output');
+      } else if (lowerCommand.includes('chat') || lowerCommand.includes('bot')) {
+        navigateToSection('chatbot');
+      } else if (lowerCommand.includes('voice') || lowerCommand.includes('assistant')) {
+        navigateToSection('voice-assistant');
+      }
+      return;
+    }
+
+    // Reading commands
+    if (lowerCommand.includes('read') || lowerCommand.includes('speak')) {
+      if (lowerCommand.includes('current') || lowerCommand.includes('this')) {
+        readCurrentContent();
+      } else if (lowerCommand.includes('report') || lowerCommand.includes('document')) {
+        readMedicalReport();
+      }
+      return;
+    }
+
+    // Bookmark commands
+    if (lowerCommand.includes('bookmark') || lowerCommand.includes('save')) {
+      addAudioBookmark();
+      return;
+    }
+
+    // Help command
+    if (lowerCommand.includes('help') || lowerCommand.includes('commands')) {
+      speakHelp();
+      return;
+    }
+
+    // Pass to parent component for processing
+    if (onVoiceCommand) {
+      onVoiceCommand(command);
+    }
   };
 
-  const toggleListening = () => {
-    if (isListening) {
-      stopListening();
+  const readCurrentContent = () => {
+    const activeElement = document.activeElement;
+    const mainContent = document.querySelector('main') || document.body;
+    
+    let contentToRead = '';
+    
+    if (activeElement && activeElement.textContent) {
+      contentToRead = activeElement.textContent;
     } else {
-      startListening();
+      // Read the main content area
+      const sections = mainContent.querySelectorAll('section, article, .content-area');
+      if (sections.length > 0) {
+        contentToRead = Array.from(sections)
+          .map(section => section.textContent)
+          .join('. ');
+      } else {
+        contentToRead = mainContent.textContent;
+      }
+    }
+    
+    if (contentToRead) {
+      speak(contentToRead.slice(0, 500) + (contentToRead.length > 500 ? '... Use voice commands to navigate or ask questions.' : ''));
+    } else {
+      speak('No content found to read. Use voice commands to navigate to different sections.');
     }
   };
 
-  if (!isSupported) {
-    return (
-      <div className="bg-gray-50 rounded-lg p-4 text-center">
-        <div className="text-gray-400 mb-2">
-          <svg className="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-          </svg>
-        </div>
-        <p className="text-sm text-gray-600">Voice features not supported in this browser</p>
-      </div>
-    );
-  }
+  const readMedicalReport = () => {
+    const reportElement = document.querySelector('#medical-text') || 
+                         document.querySelector('[data-content="medical-report"]') ||
+                         document.querySelector('textarea');
+    
+    if (reportElement && reportElement.value) {
+      speak(`Reading medical report: ${reportElement.value}`);
+    } else {
+      speak('No medical report found. Please upload or paste your medical text first.');
+    }
+  };
+
+  const addAudioBookmark = () => {
+    const timestamp = new Date();
+    const currentSection = document.activeElement?.closest('[data-section]')?.dataset.section || 'unknown';
+    
+    const bookmark = {
+      id: Date.now(),
+      section: currentSection,
+      timestamp,
+      label: `Bookmark ${audioBookmarks.length + 1}`
+    };
+    
+    setAudioBookmarks(prev => [...prev, bookmark]);
+    speak(`Bookmark added for ${currentSection} section`);
+  };
+
+  const speakHelp = () => {
+    const helpText = `
+      MediClarify Voice Assistant Help.
+      Voice Commands:
+      - Say "read this" or "read current" to read the current content
+      - Say "go to input" to navigate to medical text input
+      - Say "go to results" to navigate to simplified output
+      - Say "go to chat" to navigate to chatbot
+      - Say "bookmark this" to save current location
+      - Say "help" for this help message
+      
+      Keyboard Shortcuts:
+      - Alt+V: Start or stop voice input
+      - Alt+S: Stop speaking
+      - Alt+R: Read current content
+      - Alt+H: Help
+      - Alt+1 through Alt+4: Navigate to different sections
+      - Tab: Navigate through elements with audio descriptions
+      
+      The assistant will pronounce medical terms correctly and provide emergency audio alerts for urgent information.
+    `;
+    
+    speak(helpText);
+  };
+
+  const toggleKeyboardMode = () => {
+    setKeyboardMode(!keyboardMode);
+    speak(keyboardMode ? 'Keyboard mode disabled' : 'Keyboard mode enabled. Tab through elements for audio descriptions.');
+  };
 
   return (
-    <div className={`${colors.card} rounded-lg shadow-md p-6 transition-all duration-300`}>
-      <div className="flex items-center space-x-3 mb-6">
-        <div className="bg-green-100 dark:bg-green-800 p-3 rounded-lg transition-all duration-300">
-          <svg className="w-6 h-6 text-green-600 dark:text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-          </svg>
+    <div className={`${colors.card} rounded-lg shadow-md p-6 transition-all duration-300`} role="region" aria-label="Voice Assistant">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-3">
+          <div className="bg-green-100 dark:bg-green-800 p-3 rounded-lg transition-all duration-300">
+            <svg className="w-6 h-6 text-green-600 dark:text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+            </svg>
+          </div>
+          <div>
+            <h3 className={`text-xl font-semibold ${colors.textPrimary}`}>🎙️ Voice Assistant</h3>
+            <p className={`text-sm ${colors.textSecondary}`}>Hands-free interaction with speech and audio</p>
+          </div>
         </div>
-        <div>
-          <h3 className={`text-xl font-semibold ${colors.textPrimary}`}>🎙️ Voice Assistant</h3>
-          <p className={`text-sm ${colors.textSecondary}`}>Hands-free interaction with speech and audio</p>
+        
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={speakHelp}
+            className={`p-2 rounded-lg ${colors.buttonSecondary} transition-all duration-300`}
+            aria-label="Voice Assistant Help"
+            title="Get help with voice commands (Alt+H)"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </button>
+          
+          <button
+            onClick={toggleKeyboardMode}
+            className={`p-2 rounded-lg transition-all duration-300 ${
+              keyboardMode 
+                ? 'bg-green-500 text-white' 
+                : colors.buttonSecondary
+            }`}
+            aria-label={`${keyboardMode ? 'Disable' : 'Enable'} keyboard navigation mode`}
+            title="Toggle keyboard navigation mode (Alt+P)"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </button>
         </div>
       </div>
 
       {/* Voice Controls */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        {/* Speech Recognition */}
-        <div className="space-y-4">
-          <h4 className="font-semibold text-gray-800">🎤 Speech Input</h4>
-          
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={toggleListening}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-                isListening
-                  ? 'bg-red-600 text-white hover:bg-red-700'
-                  : 'bg-green-600 text-white hover:bg-green-700'
-              }`}
-            >
-              {isListening ? (
-                <>
-                  <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
-                  <span>Stop Listening</span>
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clipRule="evenodd" />
-                  </svg>
-                  <span>Start Listening</span>
-                </>
-              )}
-            </button>
-            
-            {isListening && (
-              <div className="flex items-center space-x-2 text-sm text-gray-600">
-                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                <span>Listening...</span>
-              </div>
-            )}
-          </div>
-
-          {transcript && (
-            <div className="bg-gray-50 rounded-lg p-3">
-              <p className="text-sm text-gray-700">
-                <strong>Transcript:</strong> {transcript}
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Text-to-Speech */}
-        <div className="space-y-4">
-          <h4 className="font-semibold text-gray-800">🔊 Speech Output</h4>
-          
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={() => speakText(currentText || "Please enter medical text to have it read aloud.")}
-              disabled={!currentText}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-            >
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.814L4.043 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.043l4.34-3.814a1 1 0 011 .814zM12.55 5.22a.75.75 0 00-1.06 1.06L13.44 8.22a.75.75 0 101.06-1.06L12.55 5.22zm2.83 2.83a.75.75 0 10-1.06 1.06l1.06 1.06a.75.75 0 101.06-1.06l-1.06-1.06z" clipRule="evenodd" />
-              </svg>
-              <span>Read Text</span>
-            </button>
-            
-            {isSpeaking && (
-              <button
-                onClick={stopSpeaking}
-                className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
-              >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clipRule="evenodd" />
+      <div className={`${colors.cardLight} rounded-lg p-4 mb-6`}>
+        <h4 className={`font-medium ${colors.textPrimary} mb-3`}>Voice Controls</h4>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <button
+            onClick={toggleListening}
+            disabled={!isRecognitionSupported}
+            className={`flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-medium transition-all duration-300 ${
+              isListening
+                ? 'bg-red-500 hover:bg-red-600 text-white'
+                : isRecognitionSupported 
+                  ? colors.buttonPrimary
+                  : 'bg-gray-300 dark:bg-gray-600 text-gray-500 cursor-not-allowed'
+            }`}
+            aria-label={isListening ? 'Stop voice input' : 'Start voice input'}
+            title="Start or stop voice input (Alt+V)"
+          >
+            {isListening ? (
+              <>
+                <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
+                <span>Stop Listening</span>
+              </>
+            ) : (
+              <>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
                 </svg>
-                <span>Stop</span>
-              </button>
+                <span>{isRecognitionSupported ? 'Start Voice Input' : 'Voice Not Supported'}</span>
+              </>
             )}
-          </div>
+          </button>
 
-          {isSpeaking && (
-            <div className="flex items-center space-x-2 text-sm text-gray-600">
-              <div className="flex space-x-1">
-                <div className="w-1 h-4 bg-blue-500 rounded animate-pulse"></div>
-                <div className="w-1 h-3 bg-blue-500 rounded animate-pulse" style={{ animationDelay: '0.1s' }}></div>
-                <div className="w-1 h-5 bg-blue-500 rounded animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-                <div className="w-1 h-2 bg-blue-500 rounded animate-pulse" style={{ animationDelay: '0.3s' }}></div>
-              </div>
-              <span>Speaking...</span>
-            </div>
-          )}
+          <button
+            onClick={stopSpeaking}
+            disabled={!isSpeechSupported || !isSpeaking}
+            className={`flex items-center justify-center space-x-2 py-3 px-4 rounded-lg font-medium transition-all duration-300 ${
+              isSpeaking
+                ? 'bg-orange-500 hover:bg-orange-600 text-white'
+                : colors.buttonSecondary
+            }`}
+            aria-label="Stop speaking"
+            title="Stop audio output (Alt+S)"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 5.586l12.828 12.828M9 9v6m4-6v6m-7 4h12a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            <span>Stop Speaking</span>
+          </button>
         </div>
       </div>
 
-      {/* Voice Settings */}
-      <div className="space-y-4">
-        <h4 className="font-semibold text-gray-800">⚙️ Voice Settings</h4>
+      {/* Transcript Display */}
+      {isListening && (
+        <div className={`${colors.cardLight} rounded-lg p-4 mb-4`}>
+          <h4 className={`font-medium ${colors.textPrimary} mb-2`}>Voice Input:</h4>
+          <p className={`text-sm ${colors.textSecondary} min-h-[40px] italic`} aria-live="polite">
+            {transcript || 'Listening for your voice...'}
+          </p>
+        </div>
+      )}
+
+      {/* Emergency Alerts */}
+      {emergencyAlerts.length > 0 && (
+        <div className="bg-red-100 dark:bg-red-900 border border-red-300 dark:border-red-700 rounded-lg p-4 mb-4" role="alert">
+          <h4 className="font-semibold text-red-800 dark:text-red-200 mb-2">⚠️ Emergency Alerts</h4>
+          {emergencyAlerts.slice(-3).map((alert, index) => (
+            <p key={index} className="text-sm text-red-700 dark:text-red-300 mb-1">
+              {alert.text}
+            </p>
+          ))}
+        </div>
+      )}
+
+      {/* Audio Bookmarks */}
+      {audioBookmarks.length > 0 && (
+        <div className={`${colors.cardLight} rounded-lg p-4 mb-4`}>
+          <h4 className={`font-medium ${colors.textPrimary} mb-2`}>📌 Audio Bookmarks</h4>
+          <div className="space-y-1">
+            {audioBookmarks.slice(-5).map((bookmark) => (
+              <button
+                key={bookmark.id}
+                onClick={() => navigateToSection(bookmark.section)}
+                className={`text-left text-sm ${colors.textSecondary} hover:${colors.textPrimary} transition-colors`}
+              >
+                {bookmark.label} - {bookmark.section} ({bookmark.timestamp.toLocaleTimeString()})
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Quick Actions */}
+      <div className={`${colors.cardLight} rounded-lg p-4`}>
+        <h4 className={`font-medium ${colors.textPrimary} mb-3`}>Quick Actions</h4>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Speech Rate</label>
-            <input
-              type="range"
-              min="0.5"
-              max="2"
-              step="0.1"
-              value={voiceSettings.rate}
-              onChange={(e) => setVoiceSettings(prev => ({ ...prev, rate: parseFloat(e.target.value) }))}
-              className="w-full"
-            />
-            <div className="text-xs text-gray-500 mt-1">Rate: {voiceSettings.rate}x</div>
-          </div>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            onClick={readCurrentContent}
+            className={`py-2 px-3 text-sm rounded ${colors.buttonSecondary} transition-all duration-300`}
+            title="Read current content (Alt+R)"
+          >
+            📖 Read Current
+          </button>
           
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Pitch</label>
-            <input
-              type="range"
-              min="0.5"
-              max="2"
-              step="0.1"
-              value={voiceSettings.pitch}
-              onChange={(e) => setVoiceSettings(prev => ({ ...prev, pitch: parseFloat(e.target.value) }))}
-              className="w-full"
-            />
-            <div className="text-xs text-gray-500 mt-1">Pitch: {voiceSettings.pitch}</div>
-          </div>
+          <button
+            onClick={readMedicalReport}
+            className={`py-2 px-3 text-sm rounded ${colors.buttonSecondary} transition-all duration-300`}
+          >
+            🩺 Read Report
+          </button>
           
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Volume</label>
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.1"
-              value={voiceSettings.volume}
-              onChange={(e) => setVoiceSettings(prev => ({ ...prev, volume: parseFloat(e.target.value) }))}
-              className="w-full"
-            />
-            <div className="text-xs text-gray-500 mt-1">Volume: {Math.round(voiceSettings.volume * 100)}%</div>
-          </div>
+          <button
+            onClick={() => navigateToSection('medical-input')}
+            className={`py-2 px-3 text-sm rounded ${colors.buttonSecondary} transition-all duration-300`}
+            title="Go to input section (Alt+1)"
+          >
+            📝 Input
+          </button>
+          
+          <button
+            onClick={() => navigateToSection('chatbot')}
+            className={`py-2 px-3 text-sm rounded ${colors.buttonSecondary} transition-all duration-300`}
+            title="Go to chatbot (Alt+3)"
+          >
+            💬 Chat
+          </button>
         </div>
-
-        {availableVoices.length > 0 && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Voice</label>
-            <select
-              value={voiceSettings.voice?.name || ''}
-              onChange={(e) => {
-                const selectedVoice = availableVoices.find(voice => voice.name === e.target.value);
-                setVoiceSettings(prev => ({ ...prev, voice: selectedVoice }));
-              }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-            >
-              {availableVoices
-                .filter(voice => voice.lang.startsWith('en'))
-                .map((voice, index) => (
-                  <option key={index} value={voice.name}>
-                    {voice.name} ({voice.lang})
-                  </option>
-                ))}
-            </select>
-          </div>
-        )}
       </div>
 
-      {/* Voice Commands Help */}
-      <div className="mt-6 p-4 bg-green-50 rounded-lg">
-        <h4 className="font-semibold text-green-800 mb-2">💡 Voice Commands</h4>
-        <div className="text-sm text-green-700 space-y-1">
-          <p>• <strong>"Read"</strong> or <strong>"Speak"</strong> - Read current text aloud</p>
-          <p>• <strong>"Simplify"</strong> or <strong>"Explain"</strong> - Process medical text</p>
-          <p>• <strong>"Stop speaking"</strong> - Stop audio output</p>
-          <p>• <strong>"Help"</strong> or <strong>"Commands"</strong> - Hear available commands</p>
-          <p>• Speak medical text directly to input it into the system</p>
-        </div>
-        
-        <button
-          onClick={speakVoiceCommands}
-          className="mt-3 px-3 py-1 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors"
-        >
-          🔊 Hear Commands
-        </button>
-      </div>
-
-      {/* Accessibility Note */}
-      <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-        <div className="flex items-center space-x-2 text-sm text-blue-700">
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-          </svg>
-          <span>Voice features improve accessibility for users with visual impairments or motor difficulties. Ensure microphone permissions are enabled for best experience.</span>
-        </div>
+      {/* Accessibility Status */}
+      <div className="mt-4 text-xs text-gray-500 dark:text-gray-400" aria-live="polite">
+        Voice Recognition: {isRecognitionSupported ? '✅' : '❌'} | 
+        Text-to-Speech: {isSpeechSupported ? '✅' : '❌'} | 
+        Keyboard Mode: {keyboardMode ? '✅' : '❌'}
       </div>
     </div>
   );

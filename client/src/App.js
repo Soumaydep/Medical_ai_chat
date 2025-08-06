@@ -12,6 +12,7 @@ import MedicalDictionary from './components/MedicalDictionary';
 import HealthInsights from './components/HealthInsights';
 import VoiceAssistant from './components/VoiceAssistant';
 import GastricDietGuide from './components/GastricDietGuide';
+import OfflineManager from './components/OfflineManager';
 import config from './config';
 
 function AppContent() {
@@ -99,7 +100,8 @@ function AppContent() {
             { id: 'insights', label: '🧠 Health Insights', icon: 'insights' },
             { id: 'dictionary', label: '📚 Medical Dictionary', icon: 'dictionary' },
             { id: 'gastric', label: '🍽️ Gastric Diet Guide', icon: 'gastric' },
-            { id: 'voice', label: '🎙️ Voice Assistant', icon: 'voice' }
+            { id: 'voice', label: '🎙️ Voice Assistant', icon: 'voice' },
+            { id: 'offline', label: '📱 Offline Manager', icon: 'offline' }
           ].map((tab) => (
             <button
               key={tab.id}
@@ -212,6 +214,11 @@ function AppContent() {
             onVoiceCommand={handleVoiceCommand}
             currentText={originalText}
           />
+        )}
+
+        {/* Offline Manager Tab */}
+        {activeTab === 'offline' && (
+          <OfflineManager />
         )}
       </main>
 

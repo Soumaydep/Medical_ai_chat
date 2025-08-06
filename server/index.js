@@ -7,6 +7,7 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { sampleMedicalReports, chatbotResponses, medicalEducationContent } = require('./dummy-data');
 const { getLanguageExample, getTranslatedResponse } = require('./multi-language-examples');
 const { medicalInsights, medicalDictionary, healthRecommendations } = require('./ai-analytics');
+const { EnhancedMedicalNLP } = require('./enhanced-medical-nlp');
 
 // Fix SSL certificate issues in development
 if (process.env.NODE_ENV === 'development') {
@@ -35,6 +36,10 @@ if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'your_gemini_a
 
 // Initialize Google Generative AI
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'dummy-key');
+
+// Initialize Enhanced Medical NLP
+const medicalNLP = new EnhancedMedicalNLP();
+console.log('✅ Enhanced Medical NLP initialized');
 
 // Middleware
 app.use(helmet());
