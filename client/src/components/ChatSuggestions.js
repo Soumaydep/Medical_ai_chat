@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { API_BASE_URL } from '../config';
+import config from '../config';
 
 const ChatSuggestions = ({ onSelectSuggestion, disabled }) => {
   const [suggestions, setSuggestions] = useState([]);
@@ -11,7 +11,7 @@ const ChatSuggestions = ({ onSelectSuggestion, disabled }) => {
 
   const fetchSuggestions = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/chatbot/suggestions`);
+      const response = await fetch(`${config.API_URL}/api/chatbot/suggestions`);
       const data = await response.json();
       
       if (data.success) {

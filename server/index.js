@@ -6,6 +6,7 @@ const dotenv = require('dotenv');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { sampleMedicalReports, chatbotResponses, medicalEducationContent } = require('./dummy-data');
 const { getLanguageExample, getTranslatedResponse } = require('./multi-language-examples');
+const { medicalInsights, medicalDictionary, healthRecommendations } = require('./ai-analytics');
 
 // Fix SSL certificate issues in development
 if (process.env.NODE_ENV === 'development') {
@@ -460,6 +461,139 @@ app.post('/api/extract-text', async (req, res) => {
     console.error('Error in /api/extract-text:', error);
     res.status(500).json({
       error: 'Failed to extract text from image',
+      message: error.message
+    });
+  }
+});
+
+// Medical dictionary search endpoint
+app.get('/api/dictionary/search', (req, res) => {
+  try {
+    const { q: query } = req.query;
+    
+    if (!query) {
+      return res.status(400).json({ error: 'Search query is required' });
+    }
+
+    const results = medicalDictionary.searchTerm(query);
+    
+    res.json({
+      success: true,
+      results: results,
+      query: query
+    });
+  } catch (error) {
+    console.error('Error in dictionary search:', error);
+    res.status(500).json({
+      error: 'Failed to search medical dictionary',
+      message: error.message
+    });
+  }
+});
+
+// Health insights analytics endpoint
+app.post('/api/health-insights', async (req, res) => {
+  try {
+    const { medicalReports, userProfile } = req.body;
+    
+    // Generate health insights using our analytics engine
+    const trends = medicalInsights.analyzeHealthTrends(medicalReports || []);
+    const riskAssessment = medicalInsights.generateRiskAssessment(userProfile || {});
+    const predictions = medicalInsights.predictHealthOutcomes(trends);
+    const recommendations = healthRecommendations.generatePersonalizedPlan(userProfile || {}, medicalReports || []);
+    const followUpSchedule = healthRecommendations.generateFollowUpSchedule(riskAssessment);
+
+    res.json({
+      success: true,
+      insights: {
+        trends,
+        riskAssessment,
+        predictions,
+        recommendations,
+        followUpSchedule
+      }
+    });
+  } catch (error) {
+    console.error('Error generating health insights:', error);
+    res.status(500).json({
+      error: 'Failed to generate health insights',
+      message: error.message
+    });
+  }
+});
+
+// AI-powered follow-up recommendations endpoint
+app.post('/api/recommendations', async (req, res) => {
+  try {
+    const { medicalData, currentSymptoms, riskFactors } = req.body;
+    
+    if (!medicalData) {
+      return res.status(400).json({ error: 'Medical data is required' });
+    }
+
+    // Demo recommendations - in real app this would use AI analysis
+    const recommendations = {
+      immediate: [
+        {
+          priority: 'high',
+          category: 'lifestyle',
+          title: 'Monitor Blood Pressure Daily',
+          description: 'Track your blood pressure readings twice daily for the next 2 weeks',
+          reasoning: 'Recent readings show borderline hypertension',
+          timeframe: 'Next 2 weeks'
+        },
+        {
+          priority: 'medium',
+          category: 'dietary',
+          title: 'Reduce Sodium Intake',
+          description: 'Limit sodium to 2,300mg per day. Read food labels and avoid processed foods',
+          reasoning: 'High sodium can worsen blood pressure',
+          timeframe: 'Start immediately'
+        }
+      ],
+      longTerm: [
+        {
+          priority: 'medium',
+          category: 'exercise',
+          title: 'Cardiovascular Exercise Program',
+          description: '30 minutes of moderate exercise 5 days per week',
+          reasoning: 'Regular exercise improves cardiovascular health and helps control blood pressure',
+          timeframe: 'Next 3 months'
+        },
+        {
+          priority: 'low',
+          category: 'monitoring',
+          title: 'Regular Health Screenings',
+          description: 'Schedule lipid panel and glucose test every 6 months',
+          reasoning: 'Early detection of metabolic changes',
+          timeframe: 'Ongoing'
+        }
+      ],
+      followUp: [
+        {
+          specialist: 'Cardiologist',
+          timeframe: '4-6 weeks',
+          reason: 'Borderline hypertension evaluation',
+          urgency: 'moderate'
+        },
+        {
+          specialist: 'Primary Care',
+          timeframe: '3 months',
+          reason: 'Follow-up on lifestyle modifications',
+          urgency: 'low'
+        }
+      ]
+    };
+
+    res.json({
+      success: true,
+      recommendations: recommendations,
+      generatedAt: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error generating recommendations:', error);
+    res.status(500).json({
+      error: 'Failed to generate recommendations',
       message: error.message
     });
   }

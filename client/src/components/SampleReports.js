@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { API_BASE_URL } from '../config';
+import config from '../config';
 
 const SampleReports = ({ onSelectReport }) => {
   const [reports, setReports] = useState([]);
@@ -13,7 +13,7 @@ const SampleReports = ({ onSelectReport }) => {
 
   const fetchSampleReports = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/sample-reports`);
+      const response = await fetch(`${config.API_URL}/api/sample-reports`);
       const data = await response.json();
       
       if (data.success) {

@@ -7,6 +7,9 @@ import LanguageSelector from './components/LanguageSelector';
 import OCRUpload from './components/OCRUpload';
 import SampleReports from './components/SampleReports';
 import LanguageDemo from './components/LanguageDemo';
+import MedicalDictionary from './components/MedicalDictionary';
+import HealthInsights from './components/HealthInsights';
+import VoiceAssistant from './components/VoiceAssistant';
 import config from './config';
 
 function App() {
@@ -15,6 +18,7 @@ function App() {
   const [selectedLanguage, setSelectedLanguage] = useState('English');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState('main');
 
   const handleTextSimplification = async (text) => {
     setIsLoading(true);
@@ -59,17 +63,63 @@ function App() {
     setError('');
   };
 
+  const handleVoiceInput = (text) => {
+    setOriginalText(text);
+    setSimplifiedText('');
+    setError('');
+  };
+
+  const handleVoiceCommand = (command) => {
+    switch (command) {
+      case 'simplify':
+        if (originalText) {
+          handleTextSimplification(originalText);
+        }
+        break;
+      case 'translate':
+        // Focus on language selector or show language options
+        break;
+      default:
+        console.log('Unknown voice command:', command);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-medical-50">
       <Header />
       
-      <main className="container mx-auto px-4 py-8 max-w-6xl">
-        {/* Sample Reports Section */}
-        <div className="mb-8">
-          <SampleReports onSelectReport={handleSampleReportSelect} />
+      <main className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* Tab Navigation */}
+        <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg mb-8">
+          {[
+            { id: 'main', label: '🏠 Medical Analysis', icon: 'main' },
+            { id: 'insights', label: '🧠 Health Insights', icon: 'insights' },
+            { id: 'dictionary', label: '📚 Medical Dictionary', icon: 'dictionary' },
+            { id: 'voice', label: '🎙️ Voice Assistant', icon: 'voice' }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-1 py-3 px-4 text-sm font-medium rounded-md transition-colors ${
+                activeTab === tab.id
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-800'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Main Tab Content */}
+        {activeTab === 'main' && (
+          <>
+            {/* Sample Reports Section */}
+            <div className="mb-8">
+              <SampleReports onSelectReport={handleSampleReportSelect} />
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Input Section */}
           <div className="lg:col-span-2 space-y-6">
             {/* Language Selector */}
@@ -121,15 +171,39 @@ function App() {
             )}
           </div>
 
-          {/* Right Column - ChatBot */}
-          <div className="lg:col-span-1">
-            <ChatBot
-              originalText={originalText}
-              simplifiedText={simplifiedText}
-              language={selectedLanguage}
-            />
-          </div>
-        </div>
+              {/* Right Column - ChatBot */}
+              <div className="lg:col-span-1">
+                <ChatBot
+                  originalText={originalText}
+                  simplifiedText={simplifiedText}
+                  language={selectedLanguage}
+                />
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Health Insights Tab */}
+        {activeTab === 'insights' && (
+          <HealthInsights 
+            medicalData={originalText ? [{ originalText, simplifiedText }] : []}
+            userProfile={{}}
+          />
+        )}
+
+        {/* Medical Dictionary Tab */}
+        {activeTab === 'dictionary' && (
+          <MedicalDictionary />
+        )}
+
+        {/* Voice Assistant Tab */}
+        {activeTab === 'voice' && (
+          <VoiceAssistant 
+            onTextInput={handleVoiceInput}
+            onVoiceCommand={handleVoiceCommand}
+            currentText={originalText}
+          />
+        )}
       </main>
 
       {/* Footer */}
