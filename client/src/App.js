@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import Header from './components/Header';
 import MedicalTextInput from './components/MedicalTextInput';
 import SimplifiedOutput from './components/SimplifiedOutput';
@@ -13,13 +14,14 @@ import VoiceAssistant from './components/VoiceAssistant';
 import GastricDietGuide from './components/GastricDietGuide';
 import config from './config';
 
-function App() {
+function AppContent() {
   const [originalText, setOriginalText] = useState('');
   const [simplifiedText, setSimplifiedText] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState('English');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('main');
+  const { colors } = useTheme();
 
   const handleTextSimplification = async (text) => {
     setIsLoading(true);
@@ -86,12 +88,12 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-medical-50">
+    <div className={`min-h-screen bg-gradient-to-br ${colors.gradients.primary} transition-all duration-300`}>
       <Header />
       
       <main className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Tab Navigation */}
-        <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg mb-8">
+        <div className={`flex space-x-1 ${colors.tabBackground} p-1 rounded-lg mb-8 transition-all duration-300`}>
           {[
             { id: 'main', label: '🏠 Medical Analysis', icon: 'main' },
             { id: 'insights', label: '🧠 Health Insights', icon: 'insights' },
@@ -102,10 +104,10 @@ function App() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 py-3 px-4 text-sm font-medium rounded-md transition-colors ${
+              className={`flex-1 py-3 px-4 text-sm font-medium rounded-md transition-all duration-300 ${
                 activeTab === tab.id
-                  ? 'bg-white text-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-800'
+                  ? colors.tabActive
+                  : colors.tabInactive
               }`}
             >
               {tab.label}
@@ -228,6 +230,14 @@ function App() {
         </div>
       </footer>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 }
 

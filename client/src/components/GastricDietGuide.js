@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTheme } from '../contexts/ThemeContext';
 import config from '../config';
 
 const GastricDietGuide = () => {
@@ -7,6 +8,7 @@ const GastricDietGuide = () => {
   const [dietPlan, setDietPlan] = useState(null);
   const [mealPlanner, setMealPlanner] = useState({});
   const [foodTriggers, setFoodTriggers] = useState([]);
+  const { colors } = useTheme();
 
   // Gastric symptoms and conditions
   const gastricSymptoms = {
@@ -249,7 +251,7 @@ const GastricDietGuide = () => {
   }, [selectedSymptoms]);
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div className={`${colors.card} rounded-lg shadow-md p-6 transition-all duration-300`}>
       <div className="flex items-center space-x-3 mb-6">
         <div className="bg-green-100 p-3 rounded-lg">
           <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -257,13 +259,13 @@ const GastricDietGuide = () => {
           </svg>
         </div>
         <div>
-          <h3 className="text-xl font-semibold text-gray-800">🍽️ Gastric Health Diet Guide</h3>
-          <p className="text-sm text-gray-600">Personalized nutrition for digestive wellness</p>
+          <h3 className={`text-xl font-semibold ${colors.textPrimary}`}>🍽️ Gastric Health Diet Guide</h3>
+          <p className={`text-sm ${colors.textSecondary}`}>Personalized nutrition for digestive wellness</p>
         </div>
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg mb-6">
+              <div className={`flex space-x-1 ${colors.tabBackground} p-1 rounded-lg mb-6 transition-all duration-300`}>
         {[
           { id: 'overview', label: '📋 Assessment', icon: 'overview' },
           { id: 'diet', label: '🥗 Diet Plan', icon: 'diet' },
@@ -273,10 +275,10 @@ const GastricDietGuide = () => {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors ${
+            className={`flex-1 py-2 px-4 text-sm font-medium rounded-md transition-all duration-300 ${
               activeTab === tab.id
-                ? 'bg-white text-green-600 shadow-sm'
-                : 'text-gray-600 hover:text-gray-800'
+                ? colors.tabActive
+                : colors.tabInactive
             }`}
           >
             {tab.label}
