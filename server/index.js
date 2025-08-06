@@ -4,6 +4,8 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const dotenv = require('dotenv');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const { sampleMedicalReports, chatbotResponses, medicalEducationContent } = require('./dummy-data');
+const { getLanguageExample, getTranslatedResponse } = require('./multi-language-examples');
 
 // Fix SSL certificate issues in development
 if (process.env.NODE_ENV === 'development') {
@@ -48,6 +50,119 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'MediChat AI Server is running' });
 });
 
+// Sample medical reports endpoint
+app.get('/api/sample-reports', (req, res) => {
+  res.json({
+    success: true,
+    reports: sampleMedicalReports,
+    message: 'Sample medical reports for testing and demo purposes'
+  });
+});
+
+// Get specific sample report
+app.get('/api/sample-reports/:id', (req, res) => {
+  const reportId = parseInt(req.params.id);
+  const report = sampleMedicalReports.find(r => r.id === reportId);
+  
+  if (!report) {
+    return res.status(404).json({ error: 'Sample report not found' });
+  }
+  
+  res.json({
+    success: true,
+    report: report
+  });
+});
+
+// Chatbot suggestions endpoint
+app.get('/api/chatbot/suggestions', (req, res) => {
+  const suggestions = [
+    "What do these test results mean?",
+    "Should I be worried about anything?",
+    "What are normal values for blood work?",
+    "What questions should I ask my doctor?",
+    "Explain medical terms in my report",
+    "What lifestyle changes should I make?",
+    "When should I retest these values?"
+  ];
+  
+  res.json({
+    success: true,
+    suggestions: suggestions
+  });
+});
+
+// Enhanced chatbot endpoint with better responses
+app.post('/api/chatbot/ask', async (req, res) => {
+  try {
+    const { question, context } = req.body;
+    
+    if (!question) {
+      return res.status(400).json({ error: 'Question is required' });
+    }
+
+    const questionLower = question.toLowerCase();
+    
+    // Check for greetings
+    if (questionLower.includes('hello') || questionLower.includes('hi') || questionLower.includes('hey')) {
+      const greeting = chatbotResponses.greetings[Math.floor(Math.random() * chatbotResponses.greetings.length)];
+      return res.json({
+        success: true,
+        answer: greeting,
+        type: 'greeting'
+      });
+    }
+
+    // Check for common medical questions
+    for (const [key, response] of Object.entries(chatbotResponses.commonQuestions)) {
+      if (questionLower.includes(key)) {
+        return res.json({
+          success: true,
+          answer: response,
+          type: 'common_question'
+        });
+      }
+    }
+
+    // Check for test explanations
+    for (const [key, explanation] of Object.entries(chatbotResponses.testExplanations)) {
+      if (questionLower.includes(key)) {
+        return res.json({
+          success: true,
+          answer: explanation,
+          type: 'test_explanation'
+        });
+      }
+    }
+
+    // Check for medical terms
+    for (const [term, definition] of Object.entries(chatbotResponses.medicalTerms)) {
+      if (questionLower.includes(term)) {
+        return res.json({
+          success: true,
+          answer: definition,
+          type: 'medical_term'
+        });
+      }
+    }
+
+    // Fallback response
+    const fallback = chatbotResponses.fallbacks[Math.floor(Math.random() * chatbotResponses.fallbacks.length)];
+    res.json({
+      success: true,
+      answer: fallback,
+      type: 'fallback'
+    });
+
+  } catch (error) {
+    console.error('Error in chatbot endpoint:', error);
+    res.status(500).json({
+      error: 'Failed to process chatbot request',
+      message: error.message
+    });
+  }
+});
+
 // Simplify medical text endpoint
 app.post('/api/simplify', async (req, res) => {
   try {
@@ -59,31 +174,68 @@ app.post('/api/simplify', async (req, res) => {
 
     // Check if API key is configured - if not, use demo mode
     if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'your_gemini_api_key_here' || process.env.GEMINI_API_KEY === 'dummy-key') {
-      // Demo mode - return a sample response
+      // Enhanced demo mode - use sample data if medical text matches
+      let demoSimplification = null;
+      
+      // Check if we have a translation for the selected language
+      if (language !== 'English') {
+        const languageExample = getLanguageExample(language, 'cbc');
+        if (languageExample && medicalText.toLowerCase().includes('cbc')) {
+          demoSimplification = languageExample;
+        }
+      }
+      
+      // If no language-specific example, check English samples
+      if (!demoSimplification) {
+        for (const report of sampleMedicalReports) {
+          if (medicalText.toLowerCase().includes('cbc') && report.title.includes('CBC')) {
+            demoSimplification = report.simplifiedText;
+            break;
+          } else if (medicalText.toLowerCase().includes('cmp') && report.title.includes('CMP')) {
+            demoSimplification = report.simplifiedText;
+            break;
+          } else if (medicalText.toLowerCase().includes('thyroid') && report.title.includes('Thyroid')) {
+            demoSimplification = report.simplifiedText;
+            break;
+          } else if (medicalText.toLowerCase().includes('cholesterol') && report.title.includes('Lipid')) {
+            demoSimplification = report.simplifiedText;
+            break;
+          }
+        }
+      }
+      
+      // If no specific match, use a generic demo response
+      if (!demoSimplification) {
+        demoSimplification = `🔬 **DEMO MODE** - Here's what a real AI explanation would look like:
+
+**In Simple Terms:**
+Your medical report contains several important health markers:
+
+• **Test Results**: The values in your report help doctors understand how different parts of your body are working.
+
+• **Normal Ranges**: Each test has a normal range, and your results are compared to these standards.
+
+• **What to Watch**: Any values outside normal ranges may need attention or follow-up with your doctor.
+
+• **Overall Health**: Most test results work together to give a complete picture of your health.
+
+**What this means:** AI would analyze each specific value in your report and explain what it means for your health in simple, easy-to-understand language.
+
+---
+⚠️ **Note:** This is a demo response. To get real AI-powered explanations, please add your Gemini API key to the .env file.`;
+      } else {
+        // Add demo note to the matched sample
+        demoSimplification += `
+
+---
+🔬 **DEMO MODE**: This is a sample explanation based on typical test results${language !== 'English' ? ` in ${language}` : ''}. 
+⚠️ **Note:** To get real AI-powered explanations for your specific medical reports, please add your Gemini API key to the .env file.`;
+      }
+      
       const demoResponse = {
         success: true,
         originalText: medicalText,
-        simplifiedText: `🔬 **DEMO MODE** - Here's what a real AI explanation would look like:
-
-**In Simple Terms:**
-Your blood test shows some values that are easy to understand:
-
-• **White Blood Cells (WBC)**: 12.5 - This is slightly higher than normal (normal is 4-11). This usually means your body might be fighting off an infection or dealing with some inflammation.
-
-• **Red Blood Cells (RBC) & Hemoglobin (Hgb)**: These are normal, which means your blood is carrying oxygen well throughout your body.
-
-• **Platelets (PLT)**: 285 - This is normal, which means your blood can clot properly if you get a cut.
-
-• **Blood Sugar (Glucose)**: 110 - This is slightly elevated but still acceptable (normal is under 100 when fasting).
-
-• **Kidney Function**: Your creatinine and other kidney markers look good, meaning your kidneys are working well.
-
-• **Liver Function**: Your liver enzymes (AST, ALT) are normal, so your liver is healthy.
-
-**What this means:** Overall, your blood work looks mostly good! The slightly high white blood cell count might just mean you're fighting off a minor infection. It's worth discussing with your doctor, but nothing here looks alarming.
-
----
-⚠️ **Note:** This is a demo response. To get real AI-powered explanations, please add your Gemini API key to the .env file.`,
+        simplifiedText: demoSimplification,
         language: language,
         demo: true
       };
@@ -179,23 +331,61 @@ app.post('/api/followup', async (req, res) => {
 
     // Check if API key is configured - if not, use demo mode
     if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'your_gemini_api_key_here' || process.env.GEMINI_API_KEY === 'dummy-key') {
-      // Demo mode - return a sample response
-      const demoAnswers = {
-        'what do these test results mean?': 'In demo mode: Your test results show mostly normal values with slightly elevated white blood cells, which often indicates your body is fighting a minor infection.',
-        'should i be concerned about anything?': 'In demo mode: The slightly high white blood cell count is worth mentioning to your doctor, but it\'s usually not serious. Everything else looks good!',
-        'what are the next steps?': 'In demo mode: I\'d recommend discussing the elevated WBC with your doctor at your next appointment. They might want to recheck it in a few weeks.',
-        'explain the medical terms used': 'In demo mode: WBC = White Blood Cells (infection fighters), RBC = Red Blood Cells (oxygen carriers), Hgb = Hemoglobin (oxygen protein), PLT = Platelets (clotting helpers).',
-        'what questions should i ask my doctor?': 'In demo mode: Ask: "What could cause my elevated WBC?" and "Should I retest this in a few weeks?" and "Are there any symptoms I should watch for?"'
-      };
-
+      // Enhanced demo mode with better responses
       const questionLower = question.toLowerCase();
-      let demoAnswer = demoAnswers[questionLower];
-      
+      let demoAnswer = null;
+
+      // Check for common medical questions using our chatbot responses
+      for (const [key, response] of Object.entries(chatbotResponses.commonQuestions)) {
+        if (questionLower.includes(key)) {
+          // Check if we have a translation for this language
+          const translatedResponse = getTranslatedResponse(language, key);
+          if (translatedResponse && language !== 'English') {
+            demoAnswer = `🔬 **DEMO MODE** (${language}): ${translatedResponse}`;
+          } else {
+            demoAnswer = `🔬 **DEMO MODE**: ${response}`;
+          }
+          break;
+        }
+      }
+
+      // Check for medical terms
       if (!demoAnswer) {
-        // Generic demo response
+        for (const [term, definition] of Object.entries(chatbotResponses.medicalTerms)) {
+          if (questionLower.includes(term)) {
+            demoAnswer = `🔬 **DEMO MODE**: ${definition}`;
+            break;
+          }
+        }
+      }
+
+      // Check for test explanations
+      if (!demoAnswer) {
+        for (const [test, explanation] of Object.entries(chatbotResponses.testExplanations)) {
+          if (questionLower.includes(test)) {
+            demoAnswer = `🔬 **DEMO MODE**: ${explanation}`;
+            break;
+          }
+        }
+      }
+
+      // Fallback to generic demo response
+      if (!demoAnswer) {
         demoAnswer = `🔬 **DEMO MODE**: This is a sample response to "${question}". 
 
 In a real scenario, the AI would analyze your specific medical report and provide a detailed, personalized answer to your question. The AI can explain medical terms, discuss test results, suggest follow-up questions for your doctor, and help you understand what your results mean in simple language.
+
+Here are some things I can help with in full mode:
+• Explain specific test values and what they mean
+• Discuss whether results are normal or concerning
+• Suggest lifestyle changes based on your results
+• Recommend questions to ask your doctor
+• Define medical terminology in simple terms
+
+---
+⚠️ **Note:** This is a demo response. To get real AI-powered answers, please add your Gemini API key to the .env file.`;
+      } else {
+        demoAnswer += `
 
 ---
 ⚠️ **Note:** This is a demo response. To get real AI-powered answers, please add your Gemini API key to the .env file.`;

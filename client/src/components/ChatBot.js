@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import config from '../config';
+import ChatSuggestions from './ChatSuggestions';
 
 const ChatBot = ({ originalText, simplifiedText, language }) => {
   const [messages, setMessages] = useState([]);
@@ -180,22 +181,13 @@ What would you like to know?`,
         )}
       </div>
 
-      {/* Quick Questions */}
+      {/* Chat Suggestions */}
       {originalText && messages.length <= 1 && (
         <div className="px-4 py-2 border-t border-gray-100">
-          <p className="text-xs text-gray-600 mb-2">Quick questions:</p>
-          <div className="flex flex-wrap gap-1">
-            {quickQuestions.map((question, index) => (
-              <button
-                key={index}
-                onClick={() => handleQuickQuestion(question)}
-                disabled={isLoading}
-                className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded-full text-gray-700 transition-colors disabled:opacity-50"
-              >
-                {question}
-              </button>
-            ))}
-          </div>
+          <ChatSuggestions 
+            onSelectSuggestion={handleQuickQuestion}
+            disabled={isLoading}
+          />
         </div>
       )}
 

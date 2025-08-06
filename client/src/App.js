@@ -5,6 +5,8 @@ import SimplifiedOutput from './components/SimplifiedOutput';
 import ChatBot from './components/ChatBot';
 import LanguageSelector from './components/LanguageSelector';
 import OCRUpload from './components/OCRUpload';
+import SampleReports from './components/SampleReports';
+import LanguageDemo from './components/LanguageDemo';
 import config from './config';
 
 function App() {
@@ -50,11 +52,23 @@ function App() {
     setOriginalText(extractedText);
   };
 
+  const handleSampleReportSelect = (reportText) => {
+    setOriginalText(reportText);
+    // Clear previous results
+    setSimplifiedText('');
+    setError('');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-medical-50">
       <Header />
       
       <main className="container mx-auto px-4 py-8 max-w-6xl">
+        {/* Sample Reports Section */}
+        <div className="mb-8">
+          <SampleReports onSelectReport={handleSampleReportSelect} />
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Input Section */}
           <div className="lg:col-span-2 space-y-6">
@@ -63,6 +77,9 @@ function App() {
               selectedLanguage={selectedLanguage}
               onLanguageChange={setSelectedLanguage}
             />
+
+            {/* Language Demo */}
+            <LanguageDemo />
 
             {/* OCR Upload */}
             <OCRUpload onTextExtracted={handleOCRText} />
@@ -124,7 +141,7 @@ function App() {
               Always consult with qualified healthcare professionals for medical advice.
             </p>
             <p className="text-xs mt-2">
-              MediChat AI © 2024 - Powered by OpenAI GPT-4
+              MediChat AI © 2024 - Powered by Google Gemini
             </p>
           </div>
         </div>
