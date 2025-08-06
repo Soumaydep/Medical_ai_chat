@@ -13,6 +13,7 @@ import HealthInsights from './components/HealthInsights';
 import VoiceAssistant from './components/VoiceAssistant';
 import GastricDietGuide from './components/GastricDietGuide';
 import OfflineManager from './components/OfflineManager';
+import Logo from './components/Logo';
 import config from './config';
 
 function AppContent() {
@@ -223,15 +224,18 @@ function AppContent() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 mt-16">
+      <footer className={`${colors.primary} ${colors.border} border-t mt-16 transition-all duration-300`}>
         <div className="container mx-auto px-4 py-6">
-          <div className="text-center text-gray-600">
+          <div className={`text-center ${colors.textSecondary}`}>
+            <div className="flex justify-center mb-3">
+              <Logo size="small" />
+            </div>
             <p className="text-sm">
               ⚠️ <strong>Medical Disclaimer:</strong> This tool is for educational purposes only. 
               Always consult with qualified healthcare professionals for medical advice.
             </p>
             <p className="text-xs mt-2">
-              MediChat AI © 2024 - Powered by Google Gemini
+              IntelliHealth Assistant © 2024 - Powered by Google Gemini AI
             </p>
           </div>
         </div>

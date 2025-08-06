@@ -1,7 +1,7 @@
 {
-  "name": "MediClarify AI",
-  "short_name": "MediClarify",
-  "description": "AI-powered medical report simplification with voice accessibility and offline capabilities",
+  "name": "IntelliHealth Assistant",
+  "short_name": "IntelliHealth",
+  "description": "Your intelligent medical companion with AI-powered analysis, voice accessibility and offline capabilities",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -30,14 +30,14 @@
       "sizes": "1280x720",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "MediClarify AI Dashboard"
+      "label": "IntelliHealth Assistant Dashboard"
     },
     {
       "src": "/screenshot-narrow.png",
       "sizes": "360x640", 
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "MediClarify AI Mobile View"
+      "label": "IntelliHealth Assistant Mobile View"
     }
   ],
   "features": [

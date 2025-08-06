@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import ThemeToggle from './ThemeToggle';
+import Logo from './Logo';
 
 const Header = () => {
   const { colors } = useTheme();
@@ -9,17 +10,7 @@ const Header = () => {
     <header className={`${colors.primary} shadow-sm ${colors.border} border-b transition-all duration-300`}>
       <div className="container mx-auto px-4 py-6">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </div>
-            <div>
-              <h1 className={`text-2xl font-bold ${colors.textPrimary}`}>MediChat AI</h1>
-              <p className={`text-sm ${colors.textSecondary}`}>Medical Report Simplifier</p>
-            </div>
-          </div>
+          <Logo size="medium" />
           
           <div className="flex items-center space-x-4">
             {/* Theme Toggle */}

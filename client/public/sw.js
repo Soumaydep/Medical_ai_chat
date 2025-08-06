@@ -1,9 +1,9 @@
-// MediClarify AI Service Worker
+// IntelliHealth Assistant Service Worker
 // Provides offline functionality, caching, and PWA features
 
-const CACHE_NAME = 'mediclarify-ai-v1.0.0';
-const API_CACHE_NAME = 'mediclarify-api-v1.0.0';
-const OFFLINE_DATA_CACHE = 'mediclarify-offline-v1.0.0';
+const CACHE_NAME = 'intellihealth-assistant-v1.0.0';
+const API_CACHE_NAME = 'intellihealth-api-v1.0.0';
+const OFFLINE_DATA_CACHE = 'intellihealth-offline-v1.0.0';
 
 // Files to cache for offline use
 const STATIC_CACHE_URLS = [
@@ -43,35 +43,35 @@ const OFFLINE_MEDICAL_DATA = {
 
 // Install event - cache essential files
 self.addEventListener('install', (event) => {
-  console.log('MediClarify Service Worker installing...');
-  
-  event.waitUntil(
-    Promise.all([
-      // Cache static assets
-      caches.open(CACHE_NAME).then((cache) => {
-        console.log('Caching static assets...');
-        return cache.addAll(STATIC_CACHE_URLS.filter(url => url !== '/'));
-      }),
+        console.log('IntelliHealth Assistant Service Worker installing...');
       
-      // Cache offline medical data
-      caches.open(OFFLINE_DATA_CACHE).then((cache) => {
-        console.log('Caching offline medical data...');
-        const offlineResponse = new Response(
-          JSON.stringify(OFFLINE_MEDICAL_DATA),
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              'Cache-Control': 'max-age=86400' // 24 hours
-            }
-          }
-        );
-        return cache.put('/offline-medical-data', offlineResponse);
-      })
-    ]).then(() => {
-      console.log('MediClarify Service Worker installed successfully');
-      // Force activation
-      return self.skipWaiting();
-    })
+      event.waitUntil(
+        Promise.all([
+          // Cache static assets
+          caches.open(CACHE_NAME).then((cache) => {
+            console.log('Caching static assets...');
+            return cache.addAll(STATIC_CACHE_URLS.filter(url => url !== '/'));
+          }),
+          
+          // Cache offline medical data
+          caches.open(OFFLINE_DATA_CACHE).then((cache) => {
+            console.log('Caching offline medical data...');
+            const offlineResponse = new Response(
+              JSON.stringify(OFFLINE_MEDICAL_DATA),
+              {
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Cache-Control': 'max-age=86400' // 24 hours
+                }
+              }
+            );
+            return cache.put('/offline-medical-data', offlineResponse);
+          })
+        ]).then(() => {
+          console.log('IntelliHealth Assistant Service Worker installed successfully');
+          // Force activation
+          return self.skipWaiting();
+        })
   );
 });
 
@@ -387,8 +387,8 @@ function createOfflinePage() {
     </head>
     <body>
       <div class="container">
-        <div class="icon">🩺</div>
-        <h1>MediClarify AI</h1>
+        <div class="icon">🤖</div>
+        <h1>IntelliHealth Assistant</h1>
         <h2>You're Offline</h2>
         <p>Don't worry! Basic medical analysis is still available while offline.</p>
         <p>Connect to the internet for full AI-powered features.</p>
@@ -432,7 +432,7 @@ self.addEventListener('push', (event) => {
   
   const data = event.data.json();
   const options = {
-    body: data.body || 'MediClarify AI notification',
+    body: data.body || 'IntelliHealth Assistant notification',
     icon: '/icon-192.png',
     badge: '/icon-192.png',
     vibrate: [200, 100, 200],
@@ -450,7 +450,7 @@ self.addEventListener('push', (event) => {
   };
   
   event.waitUntil(
-    self.registration.showNotification(data.title || 'MediClarify AI', options)
+    self.registration.showNotification(data.title || 'IntelliHealth Assistant', options)
   );
 });
 
@@ -465,4 +465,4 @@ self.addEventListener('notificationclick', (event) => {
   }
 });
 
-console.log('MediClarify AI Service Worker loaded successfully'); 
+console.log('IntelliHealth Assistant Service Worker loaded successfully'); 

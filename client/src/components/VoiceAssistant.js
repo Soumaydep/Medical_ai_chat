@@ -155,7 +155,7 @@ const VoiceAssistant = ({ onVoiceInput, onVoiceCommand }) => {
 
   const announcePageLoad = () => {
     setTimeout(() => {
-      speak('MediClarify AI loaded. Press Alt+H for help with voice commands and keyboard shortcuts.');
+      speak('IntelliHealth Assistant loaded. Press Alt+H for help with voice commands and keyboard shortcuts.');
     }, 1000);
   };
 
@@ -360,7 +360,7 @@ const VoiceAssistant = ({ onVoiceInput, onVoiceCommand }) => {
 
   const speakHelp = () => {
     const helpText = `
-      MediClarify Voice Assistant Help.
+      IntelliHealth Assistant Voice Help.
       Voice Commands:
       - Say "read this" or "read current" to read the current content
       - Say "go to input" to navigate to medical text input
@@ -377,7 +377,7 @@ const VoiceAssistant = ({ onVoiceInput, onVoiceCommand }) => {
       - Alt+1 through Alt+4: Navigate to different sections
       - Tab: Navigate through elements with audio descriptions
       
-      The assistant will pronounce medical terms correctly and provide emergency audio alerts for urgent information.
+      The intelligent assistant will pronounce medical terms correctly and provide emergency audio alerts for urgent information.
     `;
     
     speak(helpText);
