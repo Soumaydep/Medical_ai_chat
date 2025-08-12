@@ -77,7 +77,7 @@ self.addEventListener('install', (event) => {
 
 // Activate event - cleanup old caches
 self.addEventListener('activate', (event) => {
-  console.log('MediClarify Service Worker activating...');
+  console.log('Medical AI Assistant Service Worker activating...');
   
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -93,7 +93,7 @@ self.addEventListener('activate', (event) => {
         })
       );
     }).then(() => {
-      console.log('MediClarify Service Worker activated');
+      console.log('Medical AI Assistant Service Worker activated');
       // Take control of all clients
       return self.clients.claim();
     })
@@ -347,7 +347,7 @@ function createOfflinePage() {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>MediClarify AI - Offline</title>
+      <title>Medical AI Assistant - Offline</title>
       <style>
         body {
           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;

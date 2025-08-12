@@ -1,7 +1,7 @@
 {
-  "name": "IntelliHealth Assistant",
-  "short_name": "IntelliHealth",
-  "description": "Your intelligent medical companion with AI-powered analysis, voice accessibility and offline capabilities",
+  "name": "Medical AI Assistant",
+  "short_name": "Medical AI",
+  "description": "AI-powered medical document analysis with intelligent processing, voice accessibility and offline capabilities",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -30,14 +30,14 @@
       "sizes": "1280x720",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "IntelliHealth Assistant Dashboard"
+      "label": "Medical AI Assistant Dashboard"
     },
     {
       "src": "/screenshot-narrow.png",
       "sizes": "360x640", 
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "IntelliHealth Assistant Mobile View"
+      "label": "Medical AI Assistant Mobile View"
     }
   ],
   "features": [

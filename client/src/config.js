@@ -7,9 +7,9 @@ const config = {
   ),
   
   // App Configuration
-  APP_NAME: 'MediClarify AI',
+  APP_NAME: 'Medical AI Assistant',
   APP_VERSION: '2.0.0',
-  APP_DESCRIPTION: 'Professional Medical Report Analysis Platform',
+  APP_DESCRIPTION: 'AI-Powered Medical Document Analysis Platform',
   
   // Feature Flags
   FEATURES: {
@@ -30,8 +30,15 @@ const config = {
     SUPPORTED_LANGUAGES: [
       'English', 'Spanish', 'French', 'German', 'Italian', 
       'Portuguese', 'Dutch', 'Russian', 'Chinese', 'Japanese',
-      'Korean', 'Arabic', 'Hindi'
+      'Korean', 'Arabic', 'Hindi', 'Bengali'
     ]
+  },
+  
+  // Theme Configuration
+  THEME: {
+    DEFAULT_MODE: 'light',
+    PRIMARY_COLOR: 'blue',
+    ACCENT_COLOR: 'emerald'
   },
   
   // UI Configuration

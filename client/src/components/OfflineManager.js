@@ -143,7 +143,7 @@ const OfflineManager = () => {
 
   const initializeOfflineMode = () => {
     // Load cached data from localStorage
-    const cachedData = localStorage.getItem('mediClarify_offlineData');
+    const cachedData = localStorage.getItem('medicalAI_offlineData');
     if (cachedData) {
       const parsed = JSON.parse(cachedData);
       setCacheStatus({
@@ -264,12 +264,12 @@ const OfflineManager = () => {
     if (isOnline) {
       try {
         // Sync any offline-generated data with server when online
-        const offlineData = localStorage.getItem('mediClarify_pendingSync');
+        const offlineData = localStorage.getItem('medicalAI_pendingSync');
         if (offlineData) {
           // Send to server for processing
           const parsed = JSON.parse(offlineData);
           // Implementation would sync with backend
-          localStorage.removeItem('mediClarify_pendingSync');
+          localStorage.removeItem('medicalAI_pendingSync');
         }
       } catch (error) {
         console.error('Error syncing offline data:', error);
@@ -278,8 +278,8 @@ const OfflineManager = () => {
   };
 
   const clearOfflineCache = () => {
-    localStorage.removeItem('mediClarify_offlineData');
-    localStorage.removeItem('mediClarify_pendingSync');
+    localStorage.removeItem('medicalAI_offlineData');
+    localStorage.removeItem('medicalAI_pendingSync');
     setCacheStatus({ size: 0, lastUpdated: null, availableModels: [] });
   };
 
@@ -293,7 +293,7 @@ const OfflineManager = () => {
         models: ['basic-medical', 'emergency-terms', 'common-conditions']
       };
 
-      localStorage.setItem('mediClarify_offlineData', JSON.stringify(enhancedData));
+      localStorage.setItem('medicalAI_offlineData', JSON.stringify(enhancedData));
       setCacheStatus({
         size: new Blob([JSON.stringify(enhancedData)]).size,
         lastUpdated: new Date(),
@@ -307,7 +307,7 @@ const OfflineManager = () => {
   const showUpdateNotification = () => {
     // Show notification that new content is available
     if (Notification.permission === 'granted') {
-      new Notification('MediClarify Update Available', {
+      new Notification('Medical AI Assistant Update Available', {
         body: 'New features and improvements are ready to install.',
         icon: '/favicon.ico'
       });

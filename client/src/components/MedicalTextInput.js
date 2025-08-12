@@ -3,7 +3,7 @@ import { useTheme } from '../contexts/ThemeContext';
 
 const MedicalTextInput = ({ onSimplify, isLoading, initialText, onTextChange }) => {
   const [medicalText, setMedicalText] = useState(initialText || '');
-  const { colors } = useTheme();
+  const { theme } = useTheme();
   const [aiSimplified, setAiSimplified] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState('');

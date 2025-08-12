@@ -353,7 +353,7 @@ app.post('/api/simplify-report', async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Failed to simplify report' });
-    }
+  }
 });
 
 // Follow-up questions endpoint
