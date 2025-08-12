@@ -1,3 +1,4 @@
+process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -8,6 +9,7 @@ const { sampleMedicalReports, chatbotResponses, medicalEducationContent } = requ
 const { getLanguageExample, getTranslatedResponse } = require('./multi-language-examples');
 const { medicalInsights, medicalDictionary, healthRecommendations } = require('./ai-analytics');
 const { EnhancedMedicalNLP } = require('./enhanced-medical-nlp');
+const OpenAI = require('openai');
 
 // Fix SSL certificate issues in development
 if (process.env.NODE_ENV === 'development') {
@@ -24,6 +26,10 @@ https.globalAgent = new https.Agent({
 
 // Load environment variables
 dotenv.config();
+
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+});
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -324,6 +330,30 @@ Your blood test shows some values that are easy to understand:
       details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
+});
+
+// Simplify medical report endpoint
+app.post('/api/simplify-report', async (req, res) => {
+    const { report } = req.body;
+    if (!report) {
+        return res.status(400).json({ error: 'No report provided' });
+    }
+    try {
+        const completion = await openai.chat.completions.create({
+            model: 'gpt-3.5-turbo',
+            messages: [
+                { role: 'system', content: 'You are a helpful medical assistant. Simplify the following medical report for a patient in plain language.' },
+                { role: 'user', content: report }
+            ],
+            max_tokens: 512,
+            temperature: 0.5,
+        });
+        const simplified = completion.choices[0].message.content.trim();
+        res.json({ simplified });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to simplify report' });
+    }
 });
 
 // Follow-up questions endpoint

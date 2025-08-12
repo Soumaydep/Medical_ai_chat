@@ -4,6 +4,9 @@ import { useTheme } from '../contexts/ThemeContext';
 const MedicalTextInput = ({ onSimplify, isLoading, initialText, onTextChange }) => {
   const [medicalText, setMedicalText] = useState(initialText || '');
   const { colors } = useTheme();
+  const [aiSimplified, setAiSimplified] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState('');
 
   useEffect(() => {
     setMedicalText(initialText || '');
@@ -13,12 +16,37 @@ const MedicalTextInput = ({ onSimplify, isLoading, initialText, onTextChange }) 
     const text = e.target.value;
     setMedicalText(text);
     onTextChange(text);
+    setAiSimplified('');
+    setAiError('');
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (medicalText.trim() && !isLoading) {
       onSimplify(medicalText.trim());
+    }
+  };
+
+  const handleAISimplify = async () => {
+    setAiLoading(true);
+    setAiError('');
+    setAiSimplified('');
+    try {
+      const response = await fetch('/api/simplify-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ report: medicalText })
+      });
+      const data = await response.json();
+      if (response.ok && data.simplified) {
+        setAiSimplified(data.simplified);
+      } else {
+        setAiError(data.error || 'Failed to simplify with AI.');
+      }
+    } catch (err) {
+      setAiError('Network error. Please check your connection.');
+    } finally {
+      setAiLoading(false);
     }
   };
 
@@ -95,6 +123,34 @@ const MedicalTextInput = ({ onSimplify, isLoading, initialText, onTextChange }) 
 
           <button
             type="button"
+            onClick={handleAISimplify}
+            disabled={aiLoading || !medicalText.trim()}
+            className={`inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white transition-all duration-300 ${
+              aiLoading || !medicalText.trim()
+                ? 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed'
+                : colors.buttonSecondary + ' focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500'
+            }`}
+          >
+            {aiLoading ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Simplifying with AI...
+              </>
+            ) : (
+              <>
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Simplify with AI (OpenAI)
+              </>
+            )}
+          </button>
+
+          <button
+            type="button"
             onClick={() => {
               setMedicalText('');
               onTextChange('');
@@ -127,6 +183,24 @@ const MedicalTextInput = ({ onSimplify, isLoading, initialText, onTextChange }) 
           ))}
         </div>
       </div>
+
+      {aiError && (
+        <div className="mt-6 border-t border-gray-200 pt-4">
+          <h4 className="text-sm font-medium text-red-700 mb-3">AI Simplification Error:</h4>
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700">
+            {aiError}
+          </div>
+        </div>
+      )}
+
+      {aiSimplified && (
+        <div className="mt-6 border-t border-gray-200 pt-4">
+          <h4 className="text-sm font-medium text-green-700 mb-3">AI-Simplified Report:</h4>
+          <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-green-700">
+            <div className="whitespace-pre-line">{aiSimplified}</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
