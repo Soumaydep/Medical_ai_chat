@@ -119,10 +119,10 @@ const HealthInsights = ({ medicalData, userProfile }) => {
 
   const getRiskColor = (level) => {
     switch (level) {
-      case 'low': return 'text-green-600 bg-green-100';
-      case 'moderate': return 'text-yellow-600 bg-yellow-100';
-      case 'high': return 'text-red-600 bg-red-100';
-      default: return 'text-gray-600 bg-gray-100';
+      case 'low': return 'text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900';
+      case 'moderate': return 'text-yellow-600 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900';
+      case 'high': return 'text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900';
+      default: return 'text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-800';
     }
   };
 
@@ -133,27 +133,27 @@ const HealthInsights = ({ medicalData, userProfile }) => {
       case 'worsening':
         return <svg className="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M14.707 12.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>;
       default:
-        return <svg className="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" /></svg>;
+        return <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" /></svg>;
     }
   };
 
   const getDifficultyColor = (difficulty) => {
     switch (difficulty) {
-      case 'easy': return 'bg-green-100 text-green-800';
-      case 'moderate': return 'bg-yellow-100 text-yellow-800';
-      case 'hard': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'easy': return 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200';
+      case 'moderate': return 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200';
+      case 'hard': return 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200';
+      default: return 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200';
     }
   };
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <div className={`${colors.card} rounded-lg shadow-md p-6`}>
         <div className="animate-pulse space-y-4">
-          <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+          <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
           <div className="space-y-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-16 bg-gray-200 rounded"></div>
+              <div key={i} className="h-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
             ))}
           </div>
         </div>
@@ -163,15 +163,15 @@ const HealthInsights = ({ medicalData, userProfile }) => {
 
   if (!insights) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <div className={`${colors.card} rounded-lg shadow-md p-6`}>
         <div className="text-center py-8">
-          <div className="text-gray-400 mb-4">
+          <div className={`${colors.textSecondary} mb-4`}>
             <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
           </div>
-          <h4 className="text-lg font-medium text-gray-600 mb-2">No Health Data Available</h4>
-          <p className="text-gray-500">Add medical reports to see personalized health insights</p>
+          <h4 className={`text-lg font-medium ${colors.textPrimary} mb-2`}>No Health Data Available</h4>
+          <p className={colors.textSecondary}>Add medical reports to see personalized health insights</p>
         </div>
       </div>
     );
@@ -218,8 +218,8 @@ const HealthInsights = ({ medicalData, userProfile }) => {
         <div className="space-y-6">
           {/* Health Score */}
           <div className={`bg-gradient-to-r ${colors.gradients.accent} rounded-lg p-6 transition-all duration-300`}>
-                          <div className="flex items-center justify-between mb-4">
-                <h4 className={`text-lg font-semibold ${colors.textPrimary}`}>Overall Health Score</h4>
+            <div className="flex items-center justify-between mb-4">
+              <h4 className={`text-lg font-semibold ${colors.textPrimary}`}>Overall Health Score</h4>
               <span className={`px-3 py-1 text-sm font-medium rounded-full ${getRiskColor(insights.overview.riskLevel)}`}>
                 {insights.overview.riskLevel.toUpperCase()}
               </span>
@@ -243,7 +243,7 @@ const HealthInsights = ({ medicalData, userProfile }) => {
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-xl font-bold text-purple-600">{insights.overview.riskScore}</span>
+                  <span className="text-xl font-bold text-purple-600 dark:text-purple-300">{insights.overview.riskScore}</span>
                 </div>
               </div>
               
@@ -251,11 +251,11 @@ const HealthInsights = ({ medicalData, userProfile }) => {
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div className="flex items-center space-x-2">
                     <div className="w-3 h-3 bg-green-400 rounded-full"></div>
-                    <span>{insights.overview.trendsImproving} trends improving</span>
+                    <span className={colors.textPrimary}>{insights.overview.trendsImproving} trends improving</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <div className="w-3 h-3 bg-red-400 rounded-full"></div>
-                    <span>{insights.overview.trendsWorsening} trends worsening</span>
+                    <span className={colors.textPrimary}>{insights.overview.trendsWorsening} trends worsening</span>
                   </div>
                 </div>
               </div>
@@ -264,16 +264,16 @@ const HealthInsights = ({ medicalData, userProfile }) => {
 
           {/* Key Metrics */}
           <div>
-            <h4 className="text-lg font-semibold text-gray-800 mb-4">Key Health Metrics</h4>
+            <h4 className={`text-lg font-semibold ${colors.textPrimary} mb-4`}>Key Health Metrics</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {Object.entries(insights.overview.keyMetrics).map(([metric, data]) => (
-                <div key={metric} className="border border-gray-200 rounded-lg p-4">
+                <div key={metric} className={`border ${colors.border} rounded-lg p-4`}>
                   <div className="flex items-center justify-between mb-2">
-                    <h5 className="font-medium text-gray-800 capitalize">{metric.replace(/([A-Z])/g, ' $1')}</h5>
+                    <h5 className={`font-medium ${colors.textPrimary} capitalize`}>{metric.replace(/([A-Z])/g, ' $1')}</h5>
                     {getTrendIcon(data.trend)}
                   </div>
-                  <div className="text-2xl font-bold text-gray-900 mb-1">{data.value}</div>
-                  <div className="text-sm text-gray-600">Target: {data.target}</div>
+                  <div className={`text-2xl font-bold ${colors.textPrimary} mb-1`}>{data.value}</div>
+                  <div className={`text-sm ${colors.textSecondary}`}>Target: {data.target}</div>
                 </div>
               ))}
             </div>
@@ -285,21 +285,21 @@ const HealthInsights = ({ medicalData, userProfile }) => {
       {activeTab === 'risks' && (
         <div className="space-y-4">
           {insights.riskFactors.map((risk, index) => (
-            <div key={index} className="border border-gray-200 rounded-lg p-6">
+            <div key={index} className={`border ${colors.border} rounded-lg p-6`}>
               <div className="flex items-center justify-between mb-4">
-                <h4 className="text-lg font-semibold text-gray-800">{risk.category} Risk</h4>
+                <h4 className={`text-lg font-semibold ${colors.textPrimary}`}>{risk.category} Risk</h4>
                 <div className="flex items-center space-x-2">
                   <span className={`px-3 py-1 text-sm font-medium rounded-full ${getRiskColor(risk.level)}`}>
                     {risk.level.toUpperCase()}
                   </span>
-                  <span className="text-sm text-gray-600">Score: {risk.score}/10</span>
+                  <span className={`text-sm ${colors.textSecondary}`}>Score: {risk.score}/10</span>
                 </div>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <h5 className="font-medium text-gray-800 mb-2">Risk Factors:</h5>
-                  <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+                  <h5 className={`font-medium ${colors.textPrimary} mb-2`}>Risk Factors:</h5>
+                  <ul className={`list-disc list-inside text-sm ${colors.textSecondary} space-y-1`}>
                     {risk.factors.map((factor, factorIndex) => (
                       <li key={factorIndex}>{factor}</li>
                     ))}
@@ -307,16 +307,16 @@ const HealthInsights = ({ medicalData, userProfile }) => {
                 </div>
 
                 <div>
-                  <h5 className="font-medium text-gray-800 mb-2">Recommendations:</h5>
-                  <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
+                  <h5 className={`font-medium ${colors.textPrimary} mb-2`}>Recommendations:</h5>
+                  <ul className={`list-disc list-inside text-sm ${colors.textSecondary} space-y-1`}>
                     {risk.recommendations.map((rec, recIndex) => (
                       <li key={recIndex}>{rec}</li>
                     ))}
                   </ul>
                 </div>
 
-                <div className="bg-blue-50 p-3 rounded-lg">
-                  <span className="text-sm font-medium text-blue-800">⏱️ Timeframe: {risk.timeframe}</span>
+                <div className="bg-blue-50 dark:bg-blue-900 p-3 rounded-lg">
+                  <span className="text-sm font-medium text-blue-800 dark:text-blue-200">⏱️ Timeframe: {risk.timeframe}</span>
                 </div>
               </div>
             </div>
@@ -328,14 +328,14 @@ const HealthInsights = ({ medicalData, userProfile }) => {
       {activeTab === 'predictions' && (
         <div className="space-y-6">
           {/* Cholesterol Predictions */}
-          <div className="border border-gray-200 rounded-lg p-6">
-            <h4 className="text-lg font-semibold text-gray-800 mb-4">📈 Cholesterol Trend Prediction</h4>
+          <div className={`border ${colors.border} rounded-lg p-6`}>
+            <h4 className={`text-lg font-semibold ${colors.textPrimary} mb-4`}>📈 Cholesterol Trend Prediction</h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {Object.entries(insights.predictions.cholesterol).filter(([key]) => key !== 'confidence').map(([period, data]) => (
-                <div key={period} className="text-center p-4 bg-gray-50 rounded-lg">
-                  <div className="text-sm text-gray-600 mb-1 capitalize">{period.replace(/([A-Z])/g, ' $1')}</div>
-                  <div className="text-2xl font-bold text-gray-900 mb-1">{data.value} mg/dL</div>
-                  <div className="text-xs text-gray-500">{data.confidence}% confidence</div>
+                <div key={period} className="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <div className={`text-sm ${colors.textSecondary} mb-1 capitalize`}>{period.replace(/([A-Z])/g, ' $1')}</div>
+                  <div className={`text-2xl font-bold ${colors.textPrimary} mb-1`}>{data.value} mg/dL</div>
+                  <div className={`text-xs ${colors.textSecondary}`}>{data.confidence}% confidence</div>
                 </div>
               ))}
             </div>
@@ -343,17 +343,17 @@ const HealthInsights = ({ medicalData, userProfile }) => {
 
           {/* Disease Risk Predictions */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="border border-gray-200 rounded-lg p-6">
-              <h4 className="text-lg font-semibold text-gray-800 mb-4">🍭 Diabetes Risk</h4>
+            <div className={`border ${colors.border} rounded-lg p-6`}>
+              <h4 className={`text-lg font-semibold ${colors.textPrimary} mb-4`}>🍭 Diabetes Risk</h4>
               <div className="text-center mb-4">
-                <div className="text-3xl font-bold text-orange-600">{insights.predictions.diabetes.risk}%</div>
-                <div className="text-sm text-gray-600">Risk in {insights.predictions.diabetes.timeframe}</div>
+                <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">{insights.predictions.diabetes.risk}%</div>
+                <div className={`text-sm ${colors.textSecondary}`}>Risk in {insights.predictions.diabetes.timeframe}</div>
               </div>
               <div>
-                <h5 className="font-medium text-gray-800 mb-2">Modifiable Factors:</h5>
+                <h5 className={`font-medium ${colors.textPrimary} mb-2`}>Modifiable Factors:</h5>
                 <div className="flex flex-wrap gap-2">
                   {insights.predictions.diabetes.modifiableFactors.map((factor, index) => (
-                    <span key={index} className="px-2 py-1 text-xs bg-orange-100 text-orange-800 rounded-full capitalize">
+                    <span key={index} className="px-2 py-1 text-xs bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 rounded-full capitalize">
                       {factor}
                     </span>
                   ))}
@@ -361,17 +361,17 @@ const HealthInsights = ({ medicalData, userProfile }) => {
               </div>
             </div>
 
-            <div className="border border-gray-200 rounded-lg p-6">
-              <h4 className="text-lg font-semibold text-gray-800 mb-4">❤️ Cardiovascular Risk</h4>
+            <div className={`border ${colors.border} rounded-lg p-6`}>
+              <h4 className={`text-lg font-semibold ${colors.textPrimary} mb-4`}>❤️ Cardiovascular Risk</h4>
               <div className="text-center mb-4">
-                <div className="text-3xl font-bold text-red-600">{insights.predictions.cardiovascular.risk}%</div>
-                <div className="text-sm text-gray-600">Risk in {insights.predictions.cardiovascular.timeframe}</div>
+                <div className="text-3xl font-bold text-red-600 dark:text-red-400">{insights.predictions.cardiovascular.risk}%</div>
+                <div className={`text-sm ${colors.textSecondary}`}>Risk in {insights.predictions.cardiovascular.timeframe}</div>
               </div>
               <div>
-                <h5 className="font-medium text-gray-800 mb-2">Modifiable Factors:</h5>
+                <h5 className={`font-medium ${colors.textPrimary} mb-2`}>Modifiable Factors:</h5>
                 <div className="flex flex-wrap gap-2">
                   {insights.predictions.cardiovascular.modifiableFactors.map((factor, index) => (
-                    <span key={index} className="px-2 py-1 text-xs bg-red-100 text-red-800 rounded-full capitalize">
+                    <span key={index} className="px-2 py-1 text-xs bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 rounded-full capitalize">
                       {factor.replace(/([A-Z])/g, ' $1')}
                     </span>
                   ))}
@@ -387,18 +387,18 @@ const HealthInsights = ({ medicalData, userProfile }) => {
         <div className="space-y-6">
           {/* Immediate Actions */}
           <div>
-            <h4 className="text-lg font-semibold text-gray-800 mb-4">🚀 Immediate Actions</h4>
+            <h4 className={`text-lg font-semibold ${colors.textPrimary} mb-4`}>🚀 Immediate Actions</h4>
             <div className="space-y-4">
               {insights.recommendations.immediate.map((rec, index) => (
-                <div key={index} className="border border-gray-200 rounded-lg p-4">
+                <div key={index} className={`border ${colors.border} rounded-lg p-4`}>
                   <div className="flex items-start justify-between mb-3">
-                    <h5 className="font-medium text-gray-800">{rec.title}</h5>
+                    <h5 className={`font-medium ${colors.textPrimary}`}>{rec.title}</h5>
                     <span className={`px-2 py-1 text-xs rounded-full ${getDifficultyColor(rec.difficulty)}`}>
                       {rec.difficulty}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600 mb-2">{rec.description}</p>
-                  <div className="text-sm text-green-600 bg-green-50 p-2 rounded">
+                  <p className={`text-sm ${colors.textSecondary} mb-2`}>{rec.description}</p>
+                  <div className="text-sm text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900 p-2 rounded">
                     <strong>Expected Impact:</strong> {rec.impact}
                   </div>
                 </div>
@@ -408,18 +408,18 @@ const HealthInsights = ({ medicalData, userProfile }) => {
 
           {/* Long-term Goals */}
           <div>
-            <h4 className="text-lg font-semibold text-gray-800 mb-4">🎯 Long-term Goals</h4>
+            <h4 className={`text-lg font-semibold ${colors.textPrimary} mb-4`}>🎯 Long-term Goals</h4>
             <div className="space-y-4">
               {insights.recommendations.longTerm.map((rec, index) => (
-                <div key={index} className="border border-gray-200 rounded-lg p-4">
+                <div key={index} className={`border ${colors.border} rounded-lg p-4`}>
                   <div className="flex items-start justify-between mb-3">
-                    <h5 className="font-medium text-gray-800">{rec.title}</h5>
+                    <h5 className={`font-medium ${colors.textPrimary}`}>{rec.title}</h5>
                     <span className={`px-2 py-1 text-xs rounded-full ${getDifficultyColor(rec.difficulty)}`}>
                       {rec.difficulty}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600 mb-2">{rec.description}</p>
-                  <div className="text-sm text-blue-600 bg-blue-50 p-2 rounded">
+                  <p className={`text-sm ${colors.textSecondary} mb-2`}>{rec.description}</p>
+                  <div className="text-sm text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900 p-2 rounded">
                     <strong>Expected Impact:</strong> {rec.impact}
                   </div>
                 </div>
@@ -430,8 +430,8 @@ const HealthInsights = ({ medicalData, userProfile }) => {
       )}
 
       {/* Footer */}
-      <div className="mt-8 p-4 bg-purple-50 rounded-lg">
-        <div className="flex items-center space-x-2 text-sm text-purple-700">
+      <div className="mt-8 p-4 bg-purple-50 dark:bg-purple-900 rounded-lg">
+        <div className="flex items-center space-x-2 text-sm text-purple-700 dark:text-purple-300">
           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
           </svg>
