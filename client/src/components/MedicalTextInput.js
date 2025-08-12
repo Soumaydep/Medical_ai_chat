@@ -32,14 +32,17 @@ const MedicalTextInput = ({ onSimplify, isLoading, initialText, onTextChange }) 
     setAiError('');
     setAiSimplified('');
     try {
-      const response = await fetch('/api/simplify-report', {
+      const response = await fetch('/api/simplify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ report: medicalText })
+        body: JSON.stringify({ 
+          medicalText: medicalText,
+          language: 'English'
+        })
       });
       const data = await response.json();
-      if (response.ok && data.simplified) {
-        setAiSimplified(data.simplified);
+      if (response.ok && data.success) {
+        setAiSimplified(data.simplifiedText);
       } else {
         setAiError(data.error || 'Failed to simplify with AI.');
       }
@@ -66,141 +69,144 @@ const MedicalTextInput = ({ onSimplify, isLoading, initialText, onTextChange }) 
   ];
 
   return (
-    <div className={`${colors.card} rounded-lg shadow-sm ${colors.border} border p-6 transition-all duration-300`}>
-      <div className="flex items-center space-x-2 mb-4">
-        <svg className={`w-5 h-5 ${colors.textTertiary}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-        <h3 className={`text-lg font-medium ${colors.textPrimary}`}>Medical Text to Simplify</h3>
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-8 transition-all duration-300">
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          Medical Report Analysis
+        </h2>
+        <p className="text-gray-600 dark:text-gray-300">
+          Enter your medical report below for AI-powered simplification and analysis
+        </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label htmlFor="medical-text" className={`block text-sm font-medium ${colors.textSecondary} mb-2`}>
-            Paste your medical report or text here:
+          <label htmlFor="medical-text" className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+            Medical Report Text
           </label>
           <textarea
             id="medical-text"
+            className="w-full h-40 p-4 border-2 border-gray-300 dark:border-gray-600 rounded-lg 
+                     focus:ring-2 focus:ring-blue-500 focus:border-blue-500 
+                     dark:bg-gray-700 dark:text-white resize-none
+                     transition-all duration-200 text-sm leading-relaxed"
             value={medicalText}
             onChange={handleTextChange}
-            placeholder="Enter medical text, lab results, doctor's notes, or any medical documentation you'd like to understand better..."
-            rows={8}
-            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 resize-vertical transition-all duration-300 ${colors.input} ${colors.inputFocus}`}
-            disabled={isLoading}
+            placeholder="Paste your medical report here for professional AI analysis..."
           />
-          <div className="mt-1 text-xs text-gray-500">
-            {medicalText.length}/5000 characters
-          </div>
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap gap-4">
           <button
             type="submit"
-            disabled={!medicalText.trim() || isLoading}
-            className={`inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white transition-all duration-300 ${
-              !medicalText.trim() || isLoading
-                ? 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed'
-                : colors.buttonPrimary + ' focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500'
-            }`}
+            className="flex-1 min-w-[200px] bg-gradient-to-r from-blue-600 to-blue-700 
+                     hover:from-blue-700 hover:to-blue-800 text-white font-semibold 
+                     py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 
+                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                     disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            disabled={isLoading || !medicalText.trim()}
           >
             {isLoading ? (
-              <>
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                 Processing...
-              </>
+              </div>
             ) : (
-              <>
-                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-                Simplify Medical Text
-              </>
+              'Analyze Report'
             )}
           </button>
 
           <button
             type="button"
+            className="flex-1 min-w-[200px] bg-gradient-to-r from-emerald-600 to-emerald-700 
+                     hover:from-emerald-700 hover:to-emerald-800 text-white font-semibold 
+                     py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 
+                     focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2
+                     disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             onClick={handleAISimplify}
             disabled={aiLoading || !medicalText.trim()}
-            className={`inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white transition-all duration-300 ${
-              aiLoading || !medicalText.trim()
-                ? 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed'
-                : colors.buttonSecondary + ' focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500'
-            }`}
           >
             {aiLoading ? (
-              <>
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                Simplifying with AI...
-              </>
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                AI Processing...
+              </div>
             ) : (
-              <>
+              <div className="flex items-center justify-center">
                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
-                Simplify with AI (OpenAI)
-              </>
+                AI Simplify Report
+              </div>
             )}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              setMedicalText('');
-              onTextChange('');
-            }}
-            disabled={isLoading}
-            className={`inline-flex items-center px-4 py-2 border shadow-sm text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 ${colors.buttonSecondary} ${colors.border}`}
-          >
-            Clear
           </button>
         </div>
       </form>
 
-      {/* Example texts */}
-      <div className="mt-6 border-t border-gray-200 pt-4">
-        <h4 className="text-sm font-medium text-gray-700 mb-3">Try these examples:</h4>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {exampleTexts.map((example, index) => (
-            <button
-              key={index}
-              onClick={() => {
-                setMedicalText(example.text);
-                onTextChange(example.text);
-              }}
-              disabled={isLoading}
-              className="text-left p-3 bg-gray-50 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <div className="text-xs font-medium text-primary-600 mb-1">{example.title}</div>
-              <div className="text-xs text-gray-600 line-clamp-3">{example.text}</div>
-            </button>
-          ))}
-        </div>
-      </div>
-
       {aiError && (
-        <div className="mt-6 border-t border-gray-200 pt-4">
-          <h4 className="text-sm font-medium text-red-700 mb-3">AI Simplification Error:</h4>
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700">
-            {aiError}
+        <div className="mt-6 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 p-4 rounded-r-lg">
+          <div className="flex">
+            <svg className="w-5 h-5 text-red-500 mr-3 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            </svg>
+            <div>
+              <h4 className="text-red-800 dark:text-red-200 font-semibold">Processing Error</h4>
+              <p className="text-red-700 dark:text-red-300 text-sm mt-1">{aiError}</p>
+            </div>
           </div>
         </div>
       )}
 
       {aiSimplified && (
-        <div className="mt-6 border-t border-gray-200 pt-4">
-          <h4 className="text-sm font-medium text-green-700 mb-3">AI-Simplified Report:</h4>
-          <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-green-700">
-            <div className="whitespace-pre-line">{aiSimplified}</div>
+        <div className="mt-6 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 
+                      border-l-4 border-emerald-500 p-6 rounded-r-lg">
+          <div className="flex items-start">
+            <svg className="w-6 h-6 text-emerald-600 mr-3 mt-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            <div className="flex-1">
+              <h4 className="text-emerald-800 dark:text-emerald-200 font-bold text-lg mb-3">
+                AI-Simplified Report
+              </h4>
+              <div className="prose prose-sm dark:prose-invert max-w-none">
+                <div className="text-gray-800 dark:text-gray-200 whitespace-pre-line leading-relaxed">
+                  {aiSimplified}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
+
+      <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          Try Sample Reports
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {exampleTexts.map((ex, idx) => (
+            <button
+              key={idx}
+              type="button"
+              className="text-left p-4 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 
+                       rounded-lg border border-gray-200 dark:border-gray-600 transition-all duration-200 
+                       hover:shadow-md transform hover:-translate-y-0.5"
+              onClick={() => {
+                setMedicalText(ex.text);
+                onTextChange(ex.text);
+                setAiSimplified('');
+                setAiError('');
+              }}
+            >
+              <div className="font-medium text-gray-900 dark:text-white text-sm mb-1">
+                {ex.title}
+              </div>
+              <div className="text-gray-600 dark:text-gray-400 text-xs line-clamp-2">
+                Click to load sample report
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };
