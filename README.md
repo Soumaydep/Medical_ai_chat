@@ -1,6 +1,6 @@
 # MediChat AI - Medical Report Simplifier
 
-A full-stack AI-powered application that simplifies complex medical reports and provides follow-up Q&A using OpenAI's GPT-4. Upload medical images, extract text with OCR, and get easy-to-understand explanations in multiple languages.
+A full-stack AI-powered application that simplifies complex medical reports and provides follow-up Q&A using OpenAI's GPT-4. Upload medical images, extract text with OCR, and get easy-to-understand explanations in multiple languages. hello
 
 ## 🚀 Features
 
